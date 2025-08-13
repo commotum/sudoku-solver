@@ -4,7 +4,7 @@ import numpy as np
 import random
 import datetime
 from solver import solve_batch
-from utils import display_sequence
+from utils import display_sequence, pretty_print_grid
 
 def main():
     level = 0
@@ -25,17 +25,31 @@ def main():
     
     selected_input = inputs[idx:idx+1]
     selected_output = outputs[idx:idx+1]
-    
+
+    # Header and puzzle selection info
+    print("====================================")
+    print("Sudoku Solver v1.0")
+    print("====================================")
     print()
-    print(f"Selected puzzle index: {idx} from level {level} (out of {num_puzzles} puzzles)")
+    print("Puzzle Selection:")
+    print(f"- Index: {idx}")
+    print(f"- Level: {level}")
+    print(f"- Total Puzzles Available: {num_puzzles}")
     print()
-    
+    print("Initial Puzzle Grid:")
+    pretty_print_grid(selected_input[0])
+    print()
+
     sequences = solve_batch(selected_input, selected_output)
 
-    # Display the step-by-step solution
-    print("Solving sequence:")
-    print()
-    display_sequence(selected_input[0], sequences[0])
+    # Display the step-by-step solution and gather summary
+    final_grid, steps, total_placements = display_sequence(selected_input[0], sequences[0])
+
+    print("Puzzle Solved!")
+    print(f"- Total Steps: {steps}")
+    print(f"- Total Placements: {total_placements}")
+    print("- Final Grid:")
+    pretty_print_grid(final_grid)
 
 if __name__ == "__main__":
     main()
