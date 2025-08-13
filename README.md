@@ -29,7 +29,7 @@ A human‑style Sudoku solver that generates step‑by‑step solving sequences.
 
 ## Features
 
-* **Human‑like strategy engine**: Starts with singles; extendable to subsets, intersections, fish, wings, and chains.
+* **Human‑like strategy engine**: Singles, pairs, triplets, quads, intersections, fish, wings, and chains.
 * **Batch‑first design**: Vectorized candidate computation across puzzles.
 * **Reproducible sampling**: Daily deterministic selection in `main.py` for a random puzzle.
 * **Dataset pipeline**: Downloads from Hugging Face and saves grouped `.npy` files per difficulty.
