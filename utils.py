@@ -117,3 +117,48 @@ def pretty_print_grid(grid: np.ndarray, prev_grid: np.ndarray = None):
         if (i + 1) % 3 == 0 and i != 8:
             print('├───────┼───────┼───────┤')
     print('└───────┴───────┴───────┘')
+
+
+def format_deduction(pos, val, typ):
+    row = chr(ord('A') + int(pos[0]))
+    col = int(pos[1]) + 1
+    if typ == 'naked_single':
+        nice_typ = 'Naked Single'
+    elif typ.startswith('hidden_single_'):
+        scope = typ.split('_')[-1].title()
+        nice_typ = f'Hidden Single - {scope}'
+    else:
+        nice_typ = typ.replace('_', ' ').title()
+    return f"{val} at {row}{col} ({nice_typ})"
+
+
+def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
+    """Replay a solution sequence with pretty printing.
+
+    Args:
+        initial_grid: Starting grid for the puzzle.
+        sequence: List of step dictionaries returned by ``solve_batch``.
+    """
+    grid = initial_grid.copy()
+    for step_info in sequence:
+        deductions = step_info['deductions']
+        prev_grid = grid.copy()
+        applied = apply_deductions(grid[np.newaxis], [deductions])
+
+        print(f"T-{step_info['step'] + 1}:  Δ +{applied}")
+
+        unique_deds = {}
+        for ded in deductions:
+            if 'value' in ded:
+                pos = tuple(map(int, ded['position']))
+                val = int(ded['value'])
+                key = (pos, val)
+                if key not in unique_deds:
+                    unique_deds[key] = ded['type']
+
+        for key, typ in unique_deds.items():
+            pos, val = key
+            print(format_deduction(pos, val, typ))
+
+        print()
+        pretty_print_grid(grid, prev_grid)

@@ -4,6 +4,7 @@ import numpy as np
 import random
 import datetime
 from solver import solve_batch
+from utils import display_sequence
 
 def main():
     level = 0
@@ -27,12 +28,11 @@ def main():
     
     print(f"Selected puzzle index: {idx} from level {level} (out of {num_puzzles} puzzles)")
     
-    sequences = solve_batch(selected_input, selected_output, verbose=True)
-    
-    # Print the sequence for the single puzzle
+    sequences = solve_batch(selected_input, selected_output)
+
+    # Display the step-by-step solution
     print("Solving sequence:")
-    for step in sequences[0]:
-        print(step)
+    display_sequence(selected_input[0], sequences[0])
 
 if __name__ == "__main__":
     main()
