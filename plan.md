@@ -22,3 +22,16 @@ The solver now supports singles, subsets, basic intersection techniques, fish st
 - Validate that the elimination handler correctly propagates changes across strategies for more complex puzzles.
 
 Following this updated roadmap will complete the solver’s planned strategy suite, enabling comprehensive human-style deduction sequences for even the hardest puzzles.
+
+
+
+
+
+TODO:
+
+1. Separate utility and display functions by creating new display.py file for our pretty print and other output functions.
+2. Create helper functions for the headers and other print functionality in the main.py file and move them to display.py
+3. Give main.py optional args to set the difficulty level to select from with default 0
+
+1. Ensure that if there are no changes made to the grid even after escalating through all available tiers that the solve loop returns early and marks a boolean, solved = False. No need to run steps 8-100 if none of those steps will add new strategies we can use.
+2. Update the puzzle solved display function so that it only says solved if we find a solution. It shouldn't by default print, "Puzzle Solved!"
