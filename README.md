@@ -1,46 +1,88 @@
-## Sudoku Solver
+# Sudoku Solver — Human‑Style, Strategy‑First
 
-Human-style Sudoku solver that generates step-by-step solving sequences. It downloads a large dataset, buckets puzzles by difficulty, and applies modular strategies (singles, subsets, intersections, and more) to produce human-like deductions and sequences.
-
-### Features
-- **Human-like strategy engine**: Starts with singles; extendable to subsets, intersections, fish, wings, and chains.
-- **Batch-first design**: Vectorized candidate computation across puzzles.
-- **Reproducible sampling**: Daily deterministic selection in `main.py` for a random puzzle.
-- **Dataset pipeline**: Downloads from Hugging Face and saves grouped `.npy` files per difficulty.
+A human‑style Sudoku solver that generates step‑by‑step solving sequences. It downloads a large dataset, buckets puzzles by difficulty, and applies modular strategies (singles, subsets, intersections, and more) to produce human‑like deductions.
 
 ---
 
-## Setup
-- **Python**: 3.9+ recommended
-- **Create env and install**:
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-- **Requirements** (from `requirements.txt`): `numpy`, `huggingface_hub`, `tqdm`
+## Table of Contents
 
-## Download and Prepare Data
-This project uses the `sapientinc/sudoku-extreme` dataset on Hugging Face and saves per-difficulty buckets as NumPy arrays.
+* [Features](#features)
+* [Installation](#installation)
+* [Data: Download & Prepare](#data-download--prepare)
+* [Quickstart](#quickstart)
+* [How It Works](#how-it-works)
 
-- Generate processed files:
-```bash
-python dataset_download.py
-```
-- Output directory: `data/sudoku-extreme-processed/`
-- Files created per difficulty level `L`:
-  - `lvl-L-inputs.npy` (shape: `(N, 9, 9)`)
-  - `lvl-L-outputs.npy` (shape: `(N, 9, 9)`)
+  * [Default Strategies](#default-strategies)
+  * [Strategy Taxonomy](#strategy-taxonomy)
+  * [Implemented Strategies (today)](#implemented-strategies-today)
+* [Outputs: Sequences](#outputs-sequences)
+* [Project Structure](#project-structure)
+* [Extending](#extending)
+* [Dataset & Citations](#dataset--citations)
+
+  * [Dataset: Hardest Sudoku Puzzle Dataset V2](#dataset-hardest-sudoku-puzzle-dataset-v2)
+  * [Paper: Hierarchical Reasoning Model (HRM)](#paper-hierarchical-reasoning-model-hrm)
+* [License](#license)
+* [Acknowledgements](#acknowledgements)
+
+---
+
+## Features
+
+* **Human‑like strategy engine**: Starts with singles; extendable to subsets, intersections, fish, wings, and chains.
+* **Batch‑first design**: Vectorized candidate computation across puzzles.
+* **Reproducible sampling**: Daily deterministic selection in `main.py` for a random puzzle.
+* **Dataset pipeline**: Downloads from Hugging Face and saves grouped `.npy` files per difficulty.
+
+---
+
+## Installation
+
+* **Python**: 3.9+ recommended
+* **Create env and install**:
+
+  ```bash
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  ```
+* **Requirements** (from `requirements.txt`): `numpy`, `huggingface_hub`, `tqdm`
+
+---
+
+## Data: Download & Prepare
+
+This project uses the **`sapientinc/sudoku-extreme`** dataset on Hugging Face and saves per‑difficulty buckets as NumPy arrays.
+
+* Generate processed files:
+
+  ```bash
+  python dataset_download.py
+  ```
+* Output directory: `data/sudoku-extreme-processed/`
+* Files created per difficulty level `L`:
+
+  * `lvl-L-inputs.npy` (shape: `(N, 9, 9)`)
+  * `lvl-L-outputs.npy` (shape: `(N, 9, 9)`)
+
+> The download script uses `hf_hub_download` with `repo_type="dataset"` and reads `train.csv` and `test.csv`. Ratings are preserved so puzzles can be bucketed by difficulty.
+
+---
 
 ## Quickstart
-Run the daily random puzzle (level 0) and print the step-by-step sequence:
+
+Run the daily random puzzle (level 0) and print the step‑by‑step sequence:
+
 ```bash
 python main.py
 ```
+
 This selects a reproducible puzzle index (seeded by today’s date), solves it with human strategies, and prints each step with deductions.
 
 ### Solve a batch for a specific difficulty
+
 Use the programmatic API to load and solve a difficulty bucket:
+
 ```python
 import numpy as np
 from solver import load_and_solve_difficulty
@@ -54,101 +96,162 @@ print(len(sequences), "puzzles solved")
 
 ---
 
-## How it Works
-- `dataset_download.py`: Downloads CSVs from the HF dataset, converts to 9x9 arrays, groups by difficulty, and writes `.npy` files.
-- `solver.py`:
-  - `solve_batch(inputs, outputs, max_steps=100, verbose=False)`: Human-style loop that records sequences of steps. At each step it:
-    - Computes candidates (vectorized)
-    - Runs selected strategies via `strategies.find_deductions_batch`
-    - Applies fills (certainties) and records all deductions
-  - `load_and_solve_difficulty(diff, data_dir, subsample=None)`: Loads level buckets and solves them.
-- `strategies/strategies.py`: Central hub that imports strategy functions and maps names → functions in `STRATEGY_FUNCTIONS`. Also expands grouped names like `hidden_single` into row/col/box variants.
-- `utils.py`: Validation (`is_solved`, `is_valid`), application of deductions (`apply_deductions`), and a grid pretty-printer.
+## How It Works
 
-### Current default strategies used in the loop
+* **`dataset_download.py`**: Downloads CSVs from the HF dataset, converts to 9×9 arrays, groups by difficulty, and writes `.npy` files.
+* **`solver.py`**:
+
+  * `solve_batch(inputs, outputs, max_steps=100, verbose=False)`: Human‑style loop that records sequences of steps. At each step it:
+
+    * Computes candidates (vectorized)
+    * Runs selected strategies via `strategies.find_deductions_batch`
+    * Applies fills (certainties) and records all deductions
+  * `load_and_solve_difficulty(diff, data_dir, subsample=None)`: Loads level buckets and solves them.
+* **`strategies/strategies.py`**: Central hub that imports strategy functions and maps names → functions in `STRATEGY_FUNCTIONS`. Also expands grouped names like `hidden_single` into row/col/box variants.
+* **`utils.py`**: Validation (`is_solved`, `is_valid`), application of deductions (`apply_deductions`), and a grid pretty‑printer.
+
+### Default Strategies
+
 In `solver.solve_batch`, the default list is:
+
 ```python
 strategies = ["naked_single", "hidden_single"]
 ```
-You can expand this list (see Implemented Strategies below) to include subsets and intersections once you’re ready to apply eliminations in addition to fills.
 
----
+You can expand this list (see below) to include subsets and intersections once you’re ready to apply eliminations in addition to fills.
 
-## Strategy Taxonomy
-Strategies are organized by action type, complexity, and scope. The solver should apply simpler methods first for natural, human-like progress.
+### Strategy Taxonomy
 
-| Strategy | Action Type | Complexity/Size | Scope | Notes |
-|---|---|---|---|---|
-| Naked Single | Certainty (fill cell) | Single (1 candidate in cell) | Cell-only | Simplest. Applied first. |
-| Hidden Single | Certainty (fill cell) | Single (1 cell for a candidate in unit) | Unit (row/col/box) | Only one place in the unit fits a candidate. |
-| Locked Candidates | Operation on unknowns (eliminate) | Pair/Triple | Intersection (box↔row/col) | Pointing/Claiming eliminations. |
-| Naked Pair/Triplet/Quad | Operation on unknowns (eliminate) | Pair/Triple/Quad | Unit (row/col/box) | Reduce other cells in unit. |
-| Hidden Pair/Triplet/Quad | Operation on unknowns (eliminate) | Pair/Triple/Quad | Unit (row/col/box) | Inverse of naked subsets. |
-| XY-Wing | Operation on unknowns (eliminate) | Triple (3 cells) | Chain | Bivalue pivot with two wings. |
-| XYZ-Wing | Operation on unknowns (eliminate) | Triple (3 cells) | Chain | Trivalue pivot + two wings. |
-| X-Wing | Operation on unknowns (eliminate) | Quad (4-cell rectangle) | Grid-wide | Row/col rectangle pattern. |
-| Swordfish | Operation on unknowns (eliminate) | 9 cells (3×3) | Grid-wide | 3 rows × 3 cols alignment. |
-| Coloring | Eliminate or certainty | Variable | Chain | Candidate graph coloring. |
-| Forcing Chain | Eliminate or certainty | Variable | Chain | Implication chains; nice loops. |
-| Nishio | Eliminate via trial | Variable | Trial/chain | Assume and propagate until contradiction. |
+Strategies are organized by action type, complexity, and scope. The solver should apply simpler methods first for natural, human‑like progress.
 
-### Implemented strategies (code today)
-- **Singles** (`strategies/singles.py`):
-  - `naked_single`
-  - `hidden_single_row`, `hidden_single_col`, `hidden_single_box` (group name: `hidden_single`)
-- **Subsets** (`strategies/subsets.py`):
-  - `naked_subsets` (pairs/triplets/quads; row/col/box)
-  - `hidden_subsets` (pairs/triplets/quads; row/col/box)
-- **Intersections** (`strategies/intersections.py`):
-  - `locked_pointing` (row/col variants)
-  - `locked_claiming` (row/col variants)
+| Strategy                 | Action Type                       | Complexity/Size                         | Scope                      | Notes                                        |
+| ------------------------ | --------------------------------- | --------------------------------------- | -------------------------- | -------------------------------------------- |
+| Naked Single             | Certainty (fill cell)             | Single (1 candidate in cell)            | Cell‑only                  | Simplest. Applied first.                     |
+| Hidden Single            | Certainty (fill cell)             | Single (1 cell for a candidate in unit) | Unit (row/col/box)         | Only one place in the unit fits a candidate. |
+| Locked Candidates        | Operation on unknowns (eliminate) | Pair/Triple                             | Intersection (box↔row/col) | Pointing/Claiming eliminations.              |
+| Naked Pair/Triplet/Quad  | Operation on unknowns (eliminate) | Pair/Triple/Quad                        | Unit (row/col/box)         | Reduce other cells in unit.                  |
+| Hidden Pair/Triplet/Quad | Operation on unknowns (eliminate) | Pair/Triple/Quad                        | Unit (row/col/box)         | Inverse of naked subsets.                    |
+| XY‑Wing                  | Operation on unknowns (eliminate) | Triple (3 cells)                        | Chain                      | Bivalue pivot with two wings.                |
+| XYZ‑Wing                 | Operation on unknowns (eliminate) | Triple (3 cells)                        | Chain                      | Trivalue pivot + two wings.                  |
+| X‑Wing                   | Operation on unknowns (eliminate) | Quad (4‑cell rectangle)                 | Grid‑wide                  | Row/col rectangle pattern.                   |
+| Swordfish                | Operation on unknowns (eliminate) | 9 cells (3×3)                           | Grid‑wide                  | 3 rows × 3 cols alignment.                   |
+| Coloring                 | Eliminate or certainty            | Variable                                | Chain                      | Candidate graph coloring.                    |
+| Forcing Chain            | Eliminate or certainty            | Variable                                | Chain                      | Implication chains; nice loops.              |
+| Nishio                   | Eliminate via trial               | Variable                                | Trial/chain                | Assume and propagate until contradiction.    |
 
-All implemented strategy functions are wired via `strategies/strategies.py` and callable through:
-```python
-from strategies import find_deductions_batch
-# Example: expand grouped names like 'hidden_single', 'subsets', 'intersections'
-deductions_per_puzzle = find_deductions_batch(grids, strategies=[
-    "naked_single",
-    "hidden_single",
-    "subsets",
-    "intersections",
-])
-```
-Note: `utils.apply_deductions` currently applies only certainty-type fills (e.g., singles). Elimination-type deductions are recorded but not yet applied to candidates directly. Extend `apply_deductions` to mutate candidate state if you want eliminations to propagate within the same step.
+### Implemented Strategies (today)
+
+* **Singles** (`strategies/singles.py`):
+
+  * `naked_single`
+  * `hidden_single_row`, `hidden_single_col`, `hidden_single_box` (group name: `hidden_single`)
+* **Subsets** (`strategies/subsets.py`):
+
+  * `naked_subsets` (pairs/triplets/quads; row/col/box)
+  * `hidden_subsets` (pairs/triplets/quads; row/col/box)
+* **Intersections** (`strategies/intersections.py`):
+
+  * `locked_pointing` (row/col variants)
+  * `locked_claiming` (row/col variants)
+
+> Note: `utils.apply_deductions` currently applies only certainty‑type fills (e.g., singles). Elimination‑type deductions are recorded but not yet applied to candidates directly. Extend `apply_deductions` to mutate candidate state if you want eliminations to propagate within the same step.
 
 ---
 
 ## Outputs: Sequences
+
 Each puzzle’s solution is a sequence of step records:
-- `{"step": i, "grid_state": List[int], "deductions": List[Dict]}`
-- `grid_state` is a flat 81-length snapshot after the step
-- `deductions` contains items like:
-  - Singles: `{ "type": "naked_single", "position": (r, c), "value": v }`
-  - Eliminations: `{ "type": "locked_pointing_row", "eliminations": [ ((r, c), [values...]), ... ] }`
+
+* `{"step": i, "grid_state": List[int], "deductions": List[Dict]}`
+* `grid_state` is a flat 81‑length snapshot after the step
+* `deductions` contains items like:
+
+  * Singles: `{ "type": "naked_single", "position": (r, c), "value": v }`
+  * Eliminations: `{ "type": "locked_pointing_row", "eliminations": [ ((r, c), [values...]), ... ] }`
 
 You can save these sequences for ML or analysis.
 
 ---
 
 ## Project Structure
-- `dataset_download.py`: Download + bucket dataset into `.npy` files
-- `main.py`: Daily random demo; prints the solving sequence for one puzzle
-- `solver.py`: Batch solver + difficulty loader API
-- `strategies/`:
-  - `strategies.py`: Strategy registry + grouped names expansion + batch deduction driver
-  - `singles.py`, `subsets.py`, `intersections.py`: Implemented strategy families
-  - `fish.py`, `wings.py`, `chains.py`: Placeholders for advanced strategies as you extend
-- `utils.py`: Validation, application of deductions (fills), pretty printing
-- `data/`: Generated `.npy` files per difficulty level
+
+```
+dataset_download.py        # Download + bucket dataset into .npy files
+main.py                    # Daily random demo; prints the solving sequence for one puzzle
+solver.py                  # Batch solver + difficulty loader API
+strategies/
+  strategies.py            # Strategy registry + grouped names expansion + batch deduction driver
+  singles.py               # Singles
+  subsets.py               # Naked/hidden subsets
+  intersections.py         # Locked candidates (pointing/claiming)
+  fish.py, wings.py, chains.py   # Placeholders for advanced strategies
+utils.py                   # Validation, application of deductions (fills), pretty printing
+data/                      # Generated .npy files per difficulty level
+```
 
 ---
 
 ## Extending
-- Add a new strategy in an existing family (or create a new module), export a function with signature:
-  - `fn(candidates: np.ndarray, all_deductions: list[list[dict]]) -> None`
-- Register it in `STRATEGY_FUNCTIONS` in `strategies/strategies.py`.
-- Include it in the `strategies` list passed to `find_deductions_batch` and in `solver.solve_batch`.
-- Update `utils.apply_deductions` if the new strategy performs eliminations that should affect subsequent steps.
+
+* Add a new strategy in an existing family (or create a new module), export a function with signature:
+
+  * `fn(candidates: np.ndarray, all_deductions: list[list[dict]]) -> None`
+* Register it in `STRATEGY_FUNCTIONS` in `strategies/strategies.py`.
+* Include it in the `strategies` list passed to `find_deductions_batch` and in `solver.solve_batch`.
+* Update `utils.apply_deductions` if the new strategy performs eliminations that should affect subsequent steps.
+
+---
+
+## Dataset & Citations
+
+### Dataset: Hardest Sudoku Puzzle Dataset V2
+
+This project uses the **`sapientinc/sudoku-extreme`** dataset on Hugging Face.
+
+* **Composition**: mixture of easy and very hard Sudoku puzzles collected from the community.
+* **Splits & size**: Train `train.csv` (≈3.8M), Test `test.csv` (≈423k), **total** ≈4,254,780 rows.
+* **Characteristics**: exact de‑duplication; each puzzle has a unique solution; train/test are mathematically inequivalent; **rating** = number of backtracks required by the `tdoku` solver (higher is harder).
+* **Sources**: `tdoku` benchmarks and `enjoysudoku` community threads.
+
+**Suggested dataset citation (BibTeX)**
+
+```bibtex
+@dataset{sapientai_2024_sudoku_extreme_v2,
+  title        = {Hardest Sudoku Puzzle Dataset V2},
+  author       = {{Sapient AI}},
+  year         = {2024},
+  howpublished = {\url{https://huggingface.co/datasets/sapientinc/sudoku-extreme}},
+  note         = {Accessed: 2025-08-13}
+}
+```
+
+### Paper: Hierarchical Reasoning Model (HRM)
+
+If you use results or ideas from HRM, please cite their paper:
+
+```bibtex
+@misc{wang2025hierarchicalreasoningmodel,
+  title         = {Hierarchical Reasoning Model},
+  author        = {Guan Wang and Jin Li and Yuhao Sun and Xing Chen and Changling Liu and Yue Wu and Meng Lu and Sen Song and Yasin Abbasi Yadkori},
+  year          = {2025},
+  eprint        = {2506.21734},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url           = {https://arxiv.org/abs/2506.21734}
+}
+```
+
+---
 
 ## License
-MIT (or your preferred license).
+
+MIT (or your preferred license for this repo).
+
+> Note: The **HRM code** is released under **Apache‑2.0**. The **dataset** is hosted on Hugging Face; review its card for any usage terms.
+
+---
+
+## Acknowledgements
+
+* **Dataset**: Sapient AI’s *Hardest Sudoku Puzzle Dataset V2* on Hugging Face (`sapientinc/sudoku-extreme`).
+* **Upstream sources referenced by the dataset**: `tdoku` benchmarks and the `enjoysudoku` community.
