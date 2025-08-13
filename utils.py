@@ -133,17 +133,26 @@ def format_deduction(pos, val, typ):
 
 
 def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
-    """Replay a solution sequence with pretty printing.
+    """Replay a solution sequence with pretty printing and summary statistics.
 
     Args:
         initial_grid: Starting grid for the puzzle.
         sequence: List of step dictionaries returned by ``solve_batch``.
+
+    Returns:
+        tuple containing the final grid, number of steps, and total placements.
     """
     grid = initial_grid.copy()
+    total_placements = 0
+
+    print("Solving Process:")
+    print("----------------")
+
     for step_info in sequence:
         deductions = step_info['deductions']
         prev_grid = grid.copy()
         applied = apply_deductions(grid[np.newaxis], [deductions])
+        total_placements += applied
 
         print(f"T-{step_info['step'] + 1}:  Δ +{applied}")
 
@@ -162,3 +171,7 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
 
         print()
         pretty_print_grid(grid, prev_grid)
+
+    print("----------------")
+
+    return grid, len(sequence), total_placements
