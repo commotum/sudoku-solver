@@ -34,6 +34,28 @@ STRATEGY_FUNCTIONS = {
     'swordfish_col': find_swordfish_cols,
 }
 
+# Ordered expansions for strategy groups.  Groups preserve the given order
+# to keep execution deterministic.
+STRATEGY_GROUPS = {
+    'hidden_single': ['hidden_single_row', 'hidden_single_col', 'hidden_single_box'],
+    'subsets': ['naked_subsets', 'hidden_subsets'],
+    'intersections': ['locked_pointing', 'locked_claiming'],
+    'fish': ['x_wing_row', 'x_wing_col', 'swordfish_row', 'swordfish_col'],
+    # Future strategies can plug into these groups when implemented
+    'wings': [],
+    'chains': [],
+}
+
+# Strategy tiers from easiest to hardest.  The solver escalates through
+# these tiers only when earlier ones make no progress.
+TIERS = {
+    1: ['naked_single', 'hidden_single'],
+    2: ['subsets', 'intersections'],
+    3: ['fish'],
+    4: ['wings'],
+    5: ['chains'],
+}
+
 def find_deductions_batch(
     grids: np.ndarray | None = None,
     strategies: list[str] = ['naked_single', 'hidden_single'],
@@ -49,22 +71,15 @@ def find_deductions_batch(
 
     all_deductions = [[] for _ in range(N)]
 
-    adjusted_strategies = set()
+    # Expand strategy groups while preserving order.  Using a list instead of a
+    # set keeps iteration deterministic, which is important for reproducible
+    # solving sequences.
+    adjusted_strategies: list[str] = []
     for strat in strategies:
-        if strat == 'hidden_single':
-            adjusted_strategies.update(
-                ['hidden_single_row', 'hidden_single_col', 'hidden_single_box']
-            )
-        elif strat == 'subsets':
-            adjusted_strategies.update(['naked_subsets', 'hidden_subsets'])
-        elif strat == 'intersections':
-            adjusted_strategies.update(['locked_pointing', 'locked_claiming'])
-        elif strat == 'fish':
-            adjusted_strategies.update(
-                ['x_wing_row', 'x_wing_col', 'swordfish_row', 'swordfish_col']
-            )
+        if strat in STRATEGY_GROUPS:
+            adjusted_strategies.extend(STRATEGY_GROUPS[strat])
         else:
-            adjusted_strategies.add(strat)
+            adjusted_strategies.append(strat)
 
     for strat in adjusted_strategies:
         if strat in STRATEGY_FUNCTIONS:
