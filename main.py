@@ -60,6 +60,10 @@ def main():
     print("Puzzle Solved!")
     print(f"- Total Steps: {steps}")
     print(f"- Total Placements: {total_placements}")
+    print()
+    print("====================================")
+    print("PROGRAM END.")
+    print("====================================")
 
 if __name__ == "__main__":
     main()
