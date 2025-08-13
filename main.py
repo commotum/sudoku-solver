@@ -32,10 +32,10 @@ def main():
     print("Sudoku Solver v1.0")
     print("====================================")
     print()
-    print("Daily Puzzle:")
+    print("Puzzle Chosen:")
     print(f"- Difficulty Level: {level}")
-    print(f"- Puzzles @ Level:  {num_puzzles-1}")
-    print(f"- Selected Puzzle:  {idx}")
+    print(f"- Puzzles @ Level : {num_puzzles-1}")
+    print(f"- Selected Puzzle : {idx}")
     print()
     print("Initial Puzzle Grid:")
     pretty_print_grid(selected_input[0])
@@ -43,14 +43,23 @@ def main():
 
     sequences = solve_batch(selected_input, selected_output)
 
+    print("====================================")
+    print("Step by Step Solution:")
+    print("====================================")
+    print()
+
     # Display the step-by-step solution and gather summary
     final_grid, steps, total_placements = display_sequence(selected_input[0], sequences[0])
 
+    print("====================================")
+    print("Final Grid:")
+    print("====================================")
+    print()
+    pretty_print_grid(final_grid)
+    print()
     print("Puzzle Solved!")
     print(f"- Total Steps: {steps}")
     print(f"- Total Placements: {total_placements}")
-    print("- Final Grid:")
-    pretty_print_grid(final_grid)
 
 if __name__ == "__main__":
     main()
