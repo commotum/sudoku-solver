@@ -88,15 +88,32 @@ def apply_deductions(grids: np.ndarray, all_deductions: list[list[dict]]) -> int
     
     return applied_count
 
-def pretty_print_grid(grid: np.ndarray):
+def pretty_print_grid(grid: np.ndarray, prev_grid: np.ndarray = None):
     """
-    Pretty-prints a single 9x9 grid for debugging.
+    Pretty-prints a single 9x9 grid using box drawing characters.
+    If prev_grid is provided, new numbers (changes from 0 to a value) are printed in red.
     
     Args:
         grid: np.ndarray of shape (9, 9).
+        prev_grid: Optional np.ndarray of shape (9, 9) for highlighting new cells.
     """
+    RED = '\033[31m'
+    RESET = '\033[0m'
+    
+    print('┌───────┬───────┬───────┐')
     for i in range(9):
-        if i % 3 == 0 and i != 0:
-            print("-" * 21)
-        row_str = " | ".join([" ".join(str(cell) if cell != 0 else "." for cell in grid[i, j*3:(j+1)*3]) for j in range(3)])
-        print(row_str.replace(" ", " "))
+        row_parts = []
+        for block in range(3):
+            block_cells = []
+            for j in range(3):
+                col = block * 3 + j
+                cell = grid[i, col]
+                val = str(cell) if cell != 0 else '.'
+                if prev_grid is not None and grid[i, col] != prev_grid[i, col] and cell != 0:
+                    val = RED + val + RESET
+                block_cells.append(val)
+            row_parts.append(' '.join(block_cells))
+        print('│ ' + ' │ '.join(row_parts) + ' │')
+        if (i + 1) % 3 == 0 and i != 8:
+            print('├───────┼───────┼───────┤')
+    print('└───────┴───────┴───────┘')
