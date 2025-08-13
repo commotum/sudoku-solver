@@ -7,7 +7,7 @@ from solver import solve_batch
 from utils import display_sequence, pretty_print_grid
 
 def main():
-    level = 0
+    level = 100
     data_dir = "data/sudoku-extreme-processed"
     inputs_path = f"{data_dir}/lvl-{level}-inputs.npy"
     outputs_path = f"{data_dir}/lvl-{level}-outputs.npy"
