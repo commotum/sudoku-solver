@@ -245,13 +245,82 @@ If you use results or ideas from HRM, please cite their paper:
 
 ## License
 
-MIT (or your preferred license for this repo).
+**Your code:** MIT License.
 
-> Note: The **HRM code** is released under **Apache‑2.0**. The **dataset** is hosted on Hugging Face; review its card for any usage terms.
+* This repository’s **source code** is licensed under MIT. A full LICENSE text is included below for copy‑paste. Add `SPDX-License-Identifier: MIT` to new source files.
+* Third‑party assets (datasets, papers, and external repos) keep **their own licenses/terms**. See **Third‑Party Notices** and **Data usage** below.
+
+### Third‑Party Notices (summary)
+
+* **HRM (sapientinc/HRM)** — *Apache‑2.0*. We **do not bundle HRM code** here. If you later import/copy HRM code or ship binaries containing it, include a copy of the Apache‑2.0 license and preserve any `NOTICE` provided by HRM. Attribute the authors and indicate significant changes.
+* **tdoku (t-dillon/tdoku)** — *BSD‑2‑Clause*. We do **not** ship tdoku code; the dataset’s “rating” uses tdoku for backtrack counts. If you embed tdoku, retain its copyright notice and license text in source/binaries.
+* **Dataset: sapientinc/sudoku‑extreme** — License not explicitly stated in the dataset card at the time of writing. We **do not redistribute** the CSVs; instead, we provide a script that downloads them from Hugging Face. Follow the dataset card’s Usage Guidelines and any terms shown there.
+
+### Data usage
+
+* This repo provides **download scripts only** for `sapientinc/sudoku‑extreme` and stores derived **.npy** groupings locally. Please consult the dataset card for terms and avoid rehosting the raw CSVs in this repo or in your releases.
+
+---
+
+## Copy‑paste LICENSE & Notices
+
+### `LICENSE` (MIT)
+
+```text
+MIT License
+
+Copyright (c) 2025 Jacob Peterson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### `THIRD_PARTY_NOTICES.md`
+
+```markdown
+# Third‑Party Notices
+
+This project may refer to or integrate the following third‑party materials. Each item retains its own license/terms.
+
+## HRM — Hierarchical Reasoning Model
+- Upstream: https://github.com/sapientinc/HRM
+- License: Apache‑2.0
+- Notes: We do not bundle HRM code. If you import or ship HRM code, include the Apache‑2.0 LICENSE and preserve any NOTICE from upstream; attribute authors and indicate significant changes.
+
+## Tdoku — Fast Sudoku Solver
+- Upstream: https://github.com/t-dillon/tdoku
+- License: BSD‑2‑Clause
+- Notes: We do not bundle tdoku code. If you embed it, retain its copyright notice and license text in source and/or distribution.
+
+## Dataset — sapientinc/sudoku‑extreme (Hardest Sudoku Puzzle Dataset V2)
+- Upstream: https://huggingface.co/datasets/sapientinc/sudoku-extreme
+- License: not explicitly stated in the dataset card at the time of writing
+- Notes: This repo does not redistribute the dataset. Use the provided script to download from Hugging Face and follow the dataset card’s Usage Guidelines.
+```
 
 ---
 
 ## Acknowledgements
 
 * **Dataset**: Sapient AI’s *Hardest Sudoku Puzzle Dataset V2* on Hugging Face (`sapientinc/sudoku-extreme`).
+
+* **Upstream sources referenced by the dataset**: `tdoku` benchmarks and the `enjoysudoku` community.
+
+* **Dataset**: Sapient AI’s *Hardest Sudoku Puzzle Dataset V2* on Hugging Face (`sapientinc/sudoku-extreme`).
+
 * **Upstream sources referenced by the dataset**: `tdoku` benchmarks and the `enjoysudoku` community.
