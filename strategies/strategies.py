@@ -5,6 +5,8 @@ from .singles import (
     find_hidden_singles_cols,
     find_hidden_singles_boxes,
 )
+from .subsets import find_naked_subsets, find_hidden_subsets
+from .intersections import find_locked_candidates_pointing, find_locked_candidates_claiming
 
 # Dictionary mapping strategy names to functions
 STRATEGY_FUNCTIONS = {
@@ -12,7 +14,11 @@ STRATEGY_FUNCTIONS = {
     'hidden_single_row': find_hidden_singles_rows,
     'hidden_single_col': find_hidden_singles_cols,
     'hidden_single_box': find_hidden_singles_boxes,
-    # Add more from other files as we implement them, e.g., from subsets.py
+    'naked_subsets': find_naked_subsets,
+    'hidden_subsets': find_hidden_subsets,
+    'locked_pointing': find_locked_candidates_pointing,
+    'locked_claiming': find_locked_candidates_claiming,
+    # Add more from other files as we implement them, e.g., from fish.py
 }
 
 def find_deductions_batch(grids: np.ndarray, strategies: list[str] = ['naked_single', 'hidden_single']) -> list[list[dict]]:
@@ -66,6 +72,10 @@ def find_deductions_batch(grids: np.ndarray, strategies: list[str] = ['naked_sin
     for strat in strategies:
         if strat == 'hidden_single':
             adjusted_strategies.update(['hidden_single_row', 'hidden_single_col', 'hidden_single_box'])
+        elif strat == 'subsets':
+            adjusted_strategies.update(['naked_subsets', 'hidden_subsets'])
+        elif strat == 'intersections':
+            adjusted_strategies.update(['locked_pointing', 'locked_claiming'])
         else:
             adjusted_strategies.add(strat)
     
