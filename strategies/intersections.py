@@ -30,7 +30,7 @@ def find_locked_candidates_pointing(candidates: np.ndarray, all_deductions: list
                                 all_deductions[n].append({
                                     'type': 'locked_pointing_row',
                                     'box': (br, bc),
-                                    'value': k+1,
+                                    'candidate': k+1,
                                     'eliminations': elims
                                 })
                         if np.sum(cols_with) == 1:  # confined to one col in box
@@ -47,7 +47,7 @@ def find_locked_candidates_pointing(candidates: np.ndarray, all_deductions: list
                                 all_deductions[n].append({
                                     'type': 'locked_pointing_col',
                                     'box': (br, bc),
-                                    'value': k+1,
+                                    'candidate': k+1,
                                     'eliminations': elims
                                 })
 
@@ -79,7 +79,7 @@ def find_locked_candidates_claiming(candidates: np.ndarray, all_deductions: list
                             all_deductions[n].append({
                                 'type': 'locked_claiming_row',
                                 'row': r,
-                                'value': k+1,
+                                'candidate': k+1,
                                 'eliminations': elims
                             })
         # For cols
@@ -104,7 +104,7 @@ def find_locked_candidates_claiming(candidates: np.ndarray, all_deductions: list
                             all_deductions[n].append({
                                 'type': 'locked_claiming_col',
                                 'col': c,
-                                'value': k+1,
+                                'candidate': k+1,
                                 'eliminations': elims
                             })
                             
