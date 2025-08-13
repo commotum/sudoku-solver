@@ -76,7 +76,7 @@ def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100, v
                         if key not in unique_deds:
                             unique_deds[key] = ded['type']
                 
-                print(f"T = {step + 1} // Δ = +{applied}")
+                print(f"T{step + 1}: Δ +{applied}")
                 for key, typ in unique_deds.items():
                     pos, val = key
                     print(format_deduction(pos, val, typ))
