@@ -27,14 +27,15 @@ def main():
     selected_output = outputs[idx:idx+1]
 
     # Header and puzzle selection info
+    print()
     print("====================================")
     print("Sudoku Solver v1.0")
     print("====================================")
     print()
-    print("Puzzle Selection:")
-    print(f"- Index: {idx}")
-    print(f"- Level: {level}")
-    print(f"- Total Puzzles Available: {num_puzzles}")
+    print("Daily Puzzle:")
+    print(f"- Difficulty Level: {level}")
+    print(f"- Puzzles @ Level:  {num_puzzles-1}")
+    print(f"- Selected Puzzle:  {idx}")
     print()
     print("Initial Puzzle Grid:")
     pretty_print_grid(selected_input[0])
