@@ -1,6 +1,6 @@
 # Sudoku Solver — Human‑Style, Strategy‑First
 
-A human‑style Sudoku solver that generates step‑by‑step solving sequences. It downloads a large dataset, buckets puzzles by difficulty, and applies modular strategies (singles, subsets, intersections, and more) to produce human‑like deductions.
+A human‑style Sudoku solver that generates step‑by‑step solving sequences. It downloads the sudoku-extreme dataset, buckets puzzles by difficulty, and applies modular strategies (singles, subsets, intersections, and more) to produce human‑like deductions.
 
 ---
 
