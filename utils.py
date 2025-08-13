@@ -144,15 +144,14 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
     """
     grid = initial_grid.copy()
     total_placements = 0
-
-    pretty_print_grid(grid)
-    print()
-
     for idx, step_info in enumerate(sequence):
         deductions = step_info['deductions']
         prev_grid = grid.copy()
         applied = apply_deductions(grid[np.newaxis], [deductions])
         total_placements += applied
+
+        pretty_print_grid(grid, prev_grid)
+        print()
 
         print(f"T-{step_info['step'] + 1}:  Δ +{applied}")
 
@@ -173,7 +172,5 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
         if idx != len(sequence) - 1:
             print("------------------------------------")
             print()
-        pretty_print_grid(grid, prev_grid)
-        print()
 
     return grid, len(sequence), total_placements
