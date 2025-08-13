@@ -1,5 +1,3 @@
-Current Output:
-
 (.venv) jake@eve:~/Developer/sudoku-solver$ uv run main.py
 
 ====================================
@@ -26,11 +24,29 @@ Initial Puzzle Grid:
 │ . 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
 
-Solving Process:
-----------------
+====================================
+Step by Step Solution:
+====================================
+
+┌───────┬───────┬───────┐
+│ 8 3 7 │ . . 1 │ . . 6 │
+│ 6 1 . │ . 7 . │ 9 . . │
+│ . . . │ . . . │ 1 . . │
+├───────┼───────┼───────┤
+│ . . . │ . 4 3 │ . . . │
+│ . . 2 │ . . . │ . 6 . │
+│ . 7 . │ 6 . . │ 2 . 4 │
+├───────┼───────┼───────┤
+│ . . . │ . . . │ . 2 9 │
+│ . . 5 │ 8 . . │ 6 . . │
+│ . 9 . │ . . 4 │ 7 . 5 │
+└───────┴───────┴───────┘
+
 T-1:  Δ +2
-2 at D4 (Hidden Single - Box)
 4 at B3 (Naked Single)
+2 at D4 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ . . 1 │ . . 6 │
@@ -45,9 +61,12 @@ T-1:  Δ +2
 │ . . 5 │ 8 . . │ 6 . . │
 │ . 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
+
 T-2:  Δ +2
 9 at C3 (Naked Single)
 2 at A5 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ . 2 1 │ . . 6 │
@@ -62,11 +81,14 @@ T-2:  Δ +2
 │ . . 5 │ 8 . . │ 6 . . │
 │ . 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
+
 T-3:  Δ +4
-9 at A4 (Hidden Single - Box)
-2 at H6 (Hidden Single - Box)
+2 at H6 (Hidden Single - Col)
+9 at A4 (Hidden Single - Row)
 2 at B9 (Hidden Single - Row)
 2 at I1 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ . . 6 │
@@ -81,13 +103,16 @@ T-3:  Δ +4
 │ . . 5 │ 8 . 2 │ 6 . . │
 │ 2 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
+
 T-4:  Δ +6
-2 at C2 (Hidden Single - Box)
-4 at C4 (Hidden Single - Box)
-9 at H5 (Hidden Single - Box)
+2 at C2 (Hidden Single - Col)
+4 at C4 (Hidden Single - Col)
 5 at C1 (Naked Single)
 4 at H2 (Naked Single)
 7 at H1 (Hidden Single - Row)
+9 at H5 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ . . 6 │
@@ -102,10 +127,13 @@ T-4:  Δ +6
 │ 7 4 5 │ 8 9 2 │ 6 . . │
 │ 2 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
+
 T-5:  Δ +3
-4 at E1 (Hidden Single - Box)
-4 at G7 (Hidden Single - Box)
+4 at E1 (Hidden Single - Col)
 4 at A8 (Hidden Single - Col)
+4 at G7 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ . 4 6 │
@@ -120,11 +148,14 @@ T-5:  Δ +3
 │ 7 4 5 │ 8 9 2 │ 6 . . │
 │ 2 9 . │ . . 4 │ 7 . 5 │
 └───────┴───────┴───────┘
+
 T-6:  Δ +4
-8 at I8 (Hidden Single - Box)
 3 at E7 (Hidden Single - Col)
 5 at A7 (Naked Single)
 9 at E6 (Hidden Single - Row)
+8 at I8 (Hidden Single - Box)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -139,13 +170,16 @@ T-6:  Δ +4
 │ 7 4 5 │ 8 9 2 │ 6 . . │
 │ 2 9 . │ . . 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-7:  Δ +6
-8 at C9 (Hidden Single - Box)
-7 at E4 (Hidden Single - Box)
 7 at G6 (Hidden Single - Col)
 8 at D7 (Hidden Single - Col)
 3 at B8 (Naked Single)
 8 at B6 (Hidden Single - Row)
+8 at C9 (Hidden Single - Box)
+7 at E4 (Hidden Single - Box)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -160,16 +194,19 @@ T-7:  Δ +6
 │ 7 4 5 │ 8 9 2 │ 6 . . │
 │ 2 9 . │ . . 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-8:  Δ +9
-3 at C5 (Hidden Single - Box)
-5 at B4 (Hidden Single - Box)
-7 at C8 (Hidden Single - Box)
-3 at H9 (Hidden Single - Box)
 5 at F6 (Hidden Single - Col)
 6 at C6 (Hidden Single - Col)
+3 at H9 (Hidden Single - Col)
 7 at D9 (Hidden Single - Col)
+5 at B4 (Naked Single)
+7 at C8 (Naked Single)
 1 at E9 (Naked Single)
 1 at H8 (Naked Single)
+3 at C5 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -184,13 +221,16 @@ T-8:  Δ +9
 │ 7 4 5 │ 8 9 2 │ 6 1 3 │
 │ 2 9 . │ . . 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-9:  Δ +6
-1 at F5 (Hidden Single - Box)
-5 at D8 (Hidden Single - Box)
-5 at G5 (Hidden Single - Box)
+5 at G5 (Hidden Single - Col)
+5 at D8 (Hidden Single - Col)
 8 at E5 (Naked Single)
 9 at F8 (Naked Single)
 5 at E2 (Hidden Single - Row)
+1 at F5 (Hidden Single - Box)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -205,13 +245,16 @@ T-9:  Δ +6
 │ 7 4 5 │ 8 9 2 │ 6 1 3 │
 │ 2 9 . │ . . 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-10:  Δ +6
-8 at F3 (Hidden Single - Box)
-9 at D1 (Hidden Single - Box)
-6 at I5 (Hidden Single - Box)
+9 at D1 (Hidden Single - Col)
 8 at G2 (Hidden Single - Col)
+6 at I5 (Hidden Single - Col)
 6 at D2 (Naked Single)
 3 at F1 (Naked Single)
+8 at F3 (Hidden Single - Row)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -226,10 +269,13 @@ T-10:  Δ +6
 │ 7 4 5 │ 8 9 2 │ 6 1 3 │
 │ 2 9 . │ . 6 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-11:  Δ +3
-1 at D3 (Hidden Single - Box)
-6 at G3 (Hidden Single - Box)
 1 at G1 (Hidden Single - Col)
+6 at G3 (Hidden Single - Col)
+1 at D3 (Naked Single)
+
+------------------------------------
 
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
@@ -244,9 +290,10 @@ T-11:  Δ +3
 │ 7 4 5 │ 8 9 2 │ 6 1 3 │
 │ 2 9 . │ . 6 4 │ 7 8 5 │
 └───────┴───────┴───────┘
+
 T-12:  Δ +3
-3 at I3 (Hidden Single - Box)
-1 at I4 (Hidden Single - Box)
+3 at I3 (Hidden Single - Col)
+1 at I4 (Hidden Single - Col)
 3 at G4 (Naked Single)
 
 ┌───────┬───────┬───────┐
@@ -262,11 +309,11 @@ T-12:  Δ +3
 │ 7 4 5 │ 8 9 2 │ 6 1 3 │
 │ 2 9 3 │ 1 6 4 │ 7 8 5 │
 └───────┴───────┴───────┘
-----------------
-Puzzle Solved!
-- Total Steps: 12
-- Total Placements: 54
-- Final Grid:
+
+====================================
+Final Grid:
+====================================
+
 ┌───────┬───────┬───────┐
 │ 8 3 7 │ 9 2 1 │ 5 4 6 │
 │ 6 1 4 │ 5 7 8 │ 9 3 2 │
@@ -281,4 +328,6 @@ Puzzle Solved!
 │ 2 9 3 │ 1 6 4 │ 7 8 5 │
 └───────┴───────┴───────┘
 
-
+Puzzle Solved!
+- Total Steps: 12
+- Total Placements: 54
