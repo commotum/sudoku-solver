@@ -47,7 +47,7 @@ def main():
     print_puzzle_selection(level, num_puzzles, idx)
     print_initial_grid(selected_input[0])
 
-    sequences = solve_batch(selected_input, selected_output)
+    sequences, solved_flags = solve_batch(selected_input, selected_output)
 
     print_step_header()
 
@@ -56,7 +56,7 @@ def main():
         selected_input[0], sequences[0]
     )
 
-    print_final_output(final_grid, steps, total_placements)
+    print_final_output(final_grid, steps, total_placements, solved_flags[0])
 
 if __name__ == "__main__":
     main()
