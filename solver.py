@@ -3,52 +3,81 @@
 import os
 import numpy as np
 from typing import List, Dict
-from strategies import find_deductions_batch
+from strategies import find_deductions_batch, TIERS
 from utils import is_solved, apply_deductions, compute_candidates
 
 
-def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100) -> List[List[Dict]]:
-    """
-    Solves a batch of Sudoku puzzles using human-like strategies, recording each step.
-    
+def solve_batch(
+    inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100, max_tier: int = 3
+) -> List[List[Dict]]:
+    """Solve a batch of Sudoku puzzles using ordered strategy tiers.
+
+    The solver applies strategies in increasing difficulty.  At each step it
+    exhausts the current tier and only escalates when no progress is made.
+    Certainty fills (singles) are applied before eliminations.
+
     Args:
         inputs: np.ndarray of shape (N, 9, 9) - initial puzzles.
         outputs: np.ndarray of shape (N, 9, 9) - solutions for validation.
-        max_steps: Max iterations to prevent infinite loops.
-    
+        max_steps: Max iterations per puzzle.
+        max_tier: Highest strategy tier to use (see strategies.TIERS).
+
     Returns:
-        List of sequences, each a list of dicts {'step': i, 'grid_state': flat_grid, 'deductions': [ded_dicts]}.
+        List of sequences, each a list of dictionaries describing the steps
+        taken to solve a puzzle.
     """
     N = inputs.shape[0]
     grids = inputs.copy()  # Work on copies
     sequences = [[] for _ in range(N)]
-    
-    # Strategies to use (start simple, can escalate if needed)
-    strategies = ['naked_single', 'hidden_single', 'subsets', 'intersections', 'fish']
 
     for n in range(N):
         grid = grids[n]
         sequence = sequences[n]
-        candidates = compute_candidates(grid[np.newaxis])
         step = 0
-        progress = True
 
-        while not is_solved(grid[np.newaxis])[0] and progress and step < max_steps:
-            deductions = find_deductions_batch(strategies=strategies, candidates=candidates)[0]
+        while not is_solved(grid[np.newaxis])[0] and step < max_steps:
+            candidates = compute_candidates(grid[np.newaxis])
+            progress = False
 
-            sequence.append({
-                'step': step,
-                'grid_state': grid.flatten().tolist(),
-                'deductions': deductions
-            })
+            for tier in range(1, max_tier + 1):
+                tier_strategies = TIERS[tier]
+                deductions = find_deductions_batch(
+                    strategies=tier_strategies, candidates=candidates
+                )[0]
 
-            applied = apply_deductions(grid[np.newaxis], candidates, [deductions])
-            progress = applied > 0
+                fills = [d for d in deductions if 'value' in d]
+                if fills:
+                    sequence.append(
+                        {
+                            'step': step,
+                            'grid_state': grid.flatten().tolist(),
+                            'deductions': fills,
+                        }
+                    )
+                    apply_deductions(grid[np.newaxis], candidates, [fills])
+                    progress = True
+                    break
+
+                elims = [d for d in deductions if 'eliminations' in d]
+                if elims:
+                    sequence.append(
+                        {
+                            'step': step,
+                            'grid_state': grid.flatten().tolist(),
+                            'deductions': elims,
+                        }
+                    )
+                    apply_deductions(grid[np.newaxis], candidates, [elims])
+                    progress = True
+                    break
+
+            if not progress:
+                break
 
             step += 1
 
         # Validation can be handled externally if needed
-    
+
     return sequences
 
 def load_and_solve_difficulty(diff: int, data_dir: str = "data/sudoku-extreme-processed", subsample: int = None) -> List[List[Dict]]:
@@ -75,5 +104,13 @@ def load_and_solve_difficulty(diff: int, data_dir: str = "data/sudoku-extreme-pr
     if subsample:
         inputs = inputs[:subsample]
         outputs = outputs[:subsample]
-    
-    return solve_batch(inputs, outputs)
+
+    # Escalate allowed strategies based on difficulty
+    if diff <= 2:
+        max_tier = 1
+    elif diff <= 5:
+        max_tier = 2
+    else:
+        max_tier = 3
+
+    return solve_batch(inputs, outputs, max_tier=max_tier)
