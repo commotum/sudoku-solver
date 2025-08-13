@@ -132,8 +132,17 @@ def print_step_header() -> None:
     print()
 
 
-def print_final_output(final_grid: np.ndarray, steps: int, total_placements: int) -> None:
-    """Print the final solved grid and summary information."""
+def print_final_output(
+    final_grid: np.ndarray, steps: int, total_placements: int, solved: bool
+) -> None:
+    """Print the final grid and summary information.
+
+    Args:
+        final_grid: The resulting grid after applying deductions.
+        steps: Number of steps taken.
+        total_placements: Total placements applied.
+        solved: Whether the puzzle was solved.
+    """
 
     print("====================================")
     print("Final Grid:")
@@ -141,7 +150,10 @@ def print_final_output(final_grid: np.ndarray, steps: int, total_placements: int
     print()
     pretty_print_grid(final_grid)
     print()
-    print("Puzzle Solved!")
+    if solved:
+        print("Puzzle Solved!")
+    else:
+        print("Puzzle Unsolved.")
     print(f"- Total Steps: {steps}")
     print(f"- Total Placements: {total_placements}")
     print()

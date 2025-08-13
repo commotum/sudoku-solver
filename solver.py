@@ -2,14 +2,14 @@
 
 import os
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from strategies import find_deductions_batch, TIERS
 from utils import is_solved, apply_deductions, compute_candidates
 
 
 def solve_batch(
     inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100, max_tier: int = 3
-) -> List[List[Dict]]:
+) -> Tuple[List[List[Dict]], List[bool]]:
     """Solve a batch of Sudoku puzzles using ordered strategy tiers.
 
     The solver applies strategies in increasing difficulty.  At each step it
@@ -23,19 +23,23 @@ def solve_batch(
         max_tier: Highest strategy tier to use (see strategies.TIERS).
 
     Returns:
-        List of sequences, each a list of dictionaries describing the steps
-        taken to solve a puzzle.
+        Tuple of:
+            * List of sequences, each a list of dictionaries describing the
+              steps taken to solve a puzzle.
+            * List of booleans indicating whether each puzzle was solved.
     """
     N = inputs.shape[0]
     grids = inputs.copy()  # Work on copies
     sequences = [[] for _ in range(N)]
+    solved_flags = [False for _ in range(N)]
 
     for n in range(N):
         grid = grids[n]
         sequence = sequences[n]
         step = 0
 
-        while not is_solved(grid[np.newaxis])[0] and step < max_steps:
+        solved = is_solved(grid[np.newaxis])[0]
+        while not solved and step < max_steps:
             candidates = compute_candidates(grid[np.newaxis])
             progress = False
             cumulative_strategies: list[str] = []
@@ -73,25 +77,30 @@ def solve_batch(
                     break
 
             if not progress:
+                solved = False
                 break
 
             step += 1
+            solved = is_solved(grid[np.newaxis])[0]
+
+        solved_flags[n] = solved
 
         # Validation can be handled externally if needed
 
-    return sequences
+    return sequences, solved_flags
 
-def load_and_solve_difficulty(diff: int, data_dir: str = "data/sudoku-extreme-processed", subsample: int = None) -> List[List[Dict]]:
-    """
-    Loads inputs/outputs for a difficulty level and solves them.
-    
+def load_and_solve_difficulty(
+    diff: int, data_dir: str = "data/sudoku-extreme-processed", subsample: int = None
+) -> Tuple[List[List[Dict]], List[bool]]:
+    """Loads inputs/outputs for a difficulty level and solves them.
+
     Args:
         diff: Difficulty level.
         data_dir: Path to data.
         subsample: Optional number to subsample puzzles.
-    
+
     Returns:
-        Sequences for the batch.
+        Tuple of sequences and solved flags for the batch.
     """
     inputs_path = os.path.join(data_dir, f"lvl-{diff}-inputs.npy")
     outputs_path = os.path.join(data_dir, f"lvl-{diff}-outputs.npy")
