@@ -7,6 +7,18 @@ from tqdm import tqdm
 from strategies import find_deductions_batch
 from utils import is_solved, is_valid, apply_deductions, pretty_print_grid
 
+def format_deduction(pos, val, typ):
+    row = chr(ord('A') + int(pos[0]))
+    col = int(pos[1]) + 1
+    if typ == 'naked_single':
+        nice_typ = 'Naked Single'
+    elif typ.startswith('hidden_single_'):
+        scope = typ.split('_')[-1].title()
+        nice_typ = f'Hidden Single - {scope}'
+    else:
+        nice_typ = typ.replace('_', ' ').title()
+    return f"{val} at {row}{col} ({nice_typ})"
+
 def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100, verbose: bool = False) -> List[List[Dict]]:
     """
     Solves a batch of Sudoku puzzles using human-like strategies, recording each step.
@@ -54,7 +66,21 @@ def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100, v
             
             # Print if verbose
             if verbose and n == 0:
-                print(f"Step {step + 1}: Applied {applied} deductions")
+                # Deduplicate deductions by position and value
+                unique_deds = {}
+                for ded in deductions:
+                    if 'value' in ded:
+                        pos = tuple(map(int, ded['position']))
+                        val = int(ded['value'])
+                        key = (pos, val)
+                        if key not in unique_deds:
+                            unique_deds[key] = ded['type']
+                
+                print(f"T = {step + 1} // Δ = +{applied}")
+                for key, typ in unique_deds.items():
+                    pos, val = key
+                    print(format_deduction(pos, val, typ))
+                print()  # Blank line after deductions
                 pretty_print_grid(grid, prev_grid)
             
             step += 1
