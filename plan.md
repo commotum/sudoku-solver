@@ -1,33 +1,24 @@
-Status of Strategy Implementation
-The solver currently supports only singles, subsets, and basic intersection techniques, as listed in the “Implemented Strategies” section of the README. Files for fish, wing, and chain techniques exist but contain only placeholder comments, meaning these methods are not yet implemented:
+# Status of Strategy Implementation
 
-fish.py – intended for X-Wing and Swordfish
+The solver now supports singles, subsets, basic intersection techniques, fish strategies (X-Wing and Swordfish), and wing strategies (XY-Wing and XYZ-Wing). The elimination handler has been implemented to support immediate candidate updates from advanced strategies. The chains.py file still contains only placeholder comments, meaning chain techniques (Coloring, Forcing Chain, and Nishio) are not yet implemented.
 
-wings.py – intended for XY-Wing and XYZ-Wing
+# Plan to Complete Remaining Strategies
 
-chains.py – intended for Coloring, Forcing Chain, and Nishio
+## Implement remaining strategy family
 
-Plan to Complete Remaining Strategies
-Enable elimination handling
+- Chain strategies (chains.py): Implement Coloring, Forcing Chain, and Nishio to capture implication-based eliminations or forced fills. Use the existing elimination handler to propagate effects from these chain-based deductions.
 
-Extend utils.apply_deductions (and/or a candidate-management helper) so elimination-type deductions can update candidates immediately, allowing advanced strategies to propagate their effects.
+## Integrate and register
 
-Implement missing strategy families
+- Ensure the newly implemented fish and wing strategies are added to `STRATEGY_FUNCTIONS` in `strategies/strategies.py`.
+- Expand the default strategy list in `solver.py` to include fish and wing strategies now that they are stable.
+- Once chain strategies are implemented, add them to `STRATEGY_FUNCTIONS` and the default strategy list as well.
 
-Fish strategies (fish.py): X-Wing and Swordfish with a generic pattern-scanning helper.
+## Testing & validation
 
-Wing strategies (wings.py): XY-Wing and XYZ-Wing using bivalue/trivalue pivots to remove candidates.
+- Create small puzzle sets or unit tests that specifically exercise the new fish and wing strategies, in addition to the existing ones.
+- Develop tests for chain strategies once implemented.
+- Confirm that eliminations and fills from all strategies (including the new ones) are correct, improve overall solver progress, and do not introduce conflicts.
+- Validate that the elimination handler correctly propagates changes across strategies for more complex puzzles.
 
-Chain strategies (chains.py): Coloring, Forcing Chain, and Nishio to capture implication-based eliminations or forced fills.
-
-Integrate and register
-
-Add each new strategy function to STRATEGY_FUNCTIONS in strategies/strategies.py and expand the default strategy list in solver.py as they become stable.
-
-Testing & validation
-
-Create small puzzle sets or unit tests that exercise each strategy.
-
-Confirm eliminations/fills are correct and improve overall solver progress without conflicts.
-
-Following this roadmap will complete the solver’s planned strategy suite and enable more human-style deduction sequences across harder puzzles.
+Following this updated roadmap will complete the solver’s planned strategy suite, enabling comprehensive human-style deduction sequences for even the hardest puzzles.
