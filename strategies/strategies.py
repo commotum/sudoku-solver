@@ -53,7 +53,7 @@ def find_deductions_batch(grids: np.ndarray, strategies: list[str] = ['naked_sin
     candidates &= ~col_forbidden[:, np.newaxis, :, :]
     
     # Box forbidden per cell
-    row_to_box = np.floor_div(np.arange(9), 3)
+    row_to_box = np.floor_divide(np.arange(9), 3)
     box_idx = row_to_box[:, np.newaxis] * 3 + row_to_box[np.newaxis, :]  # (9, 9) with box 0-8
     box_forbidden_per_cell = box_forbidden[:, box_idx, :]  # (N, 9, 9, 9)
     candidates &= ~box_forbidden_per_cell
