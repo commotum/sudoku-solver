@@ -38,11 +38,12 @@ def solve_batch(
         while not is_solved(grid[np.newaxis])[0] and step < max_steps:
             candidates = compute_candidates(grid[np.newaxis])
             progress = False
+            cumulative_strategies: list[str] = []
 
             for tier in range(1, max_tier + 1):
-                tier_strategies = TIERS[tier]
+                cumulative_strategies.extend(TIERS[tier])
                 deductions = find_deductions_batch(
-                    strategies=tier_strategies, candidates=candidates
+                    strategies=cumulative_strategies, candidates=candidates
                 )[0]
 
                 fills = [d for d in deductions if 'value' in d]
