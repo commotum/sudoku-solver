@@ -70,8 +70,6 @@ Thumbs.db
 logs/
 
 # Project specific
-data/
-*.npy
 checkpoints/
 tmp/
 temp/
