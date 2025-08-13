@@ -145,10 +145,10 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
     grid = initial_grid.copy()
     total_placements = 0
 
-    print("Solving Process:")
-    print("----------------")
+    pretty_print_grid(grid)
+    print()
 
-    for step_info in sequence:
+    for idx, step_info in enumerate(sequence):
         deductions = step_info['deductions']
         prev_grid = grid.copy()
         applied = apply_deductions(grid[np.newaxis], [deductions])
@@ -170,8 +170,10 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
             print(format_deduction(pos, val, typ))
 
         print()
+        if idx != len(sequence) - 1:
+            print("------------------------------------")
+            print()
         pretty_print_grid(grid, prev_grid)
-
-    print("----------------")
+        print()
 
     return grid, len(sequence), total_placements
