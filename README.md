@@ -115,10 +115,10 @@ print(len(sequences), "puzzles solved")
 In `solver.solve_batch`, the default list is:
 
 ```python
-strategies = ["naked_single", "hidden_single"]
+strategies = ["naked_single", "hidden_single", "subsets", "intersections", "fish"]
 ```
 
-You can expand this list (see below) to include subsets and intersections once you’re ready to apply eliminations in addition to fills.
+You can adjust this list to enable or disable groups as new strategies are implemented.
 
 ### Strategy Taxonomy
 
@@ -153,8 +153,12 @@ Strategies are organized by action type, complexity, and scope. The solver shoul
 
   * `locked_pointing` (row/col variants)
   * `locked_claiming` (row/col variants)
+* **Fish** (`strategies/fish.py`):
 
-> Note: `utils.apply_deductions` currently applies only certainty‑type fills (e.g., singles). Elimination‑type deductions are recorded but not yet applied to candidates directly. Extend `apply_deductions` to mutate candidate state if you want eliminations to propagate within the same step.
+  * `x_wing_row`, `x_wing_col`
+  * `swordfish_row`, `swordfish_col`
+
+`utils.apply_deductions` now handles both fills and eliminations, updating candidate masks so deductions from advanced strategies propagate immediately.
 
 ---
 

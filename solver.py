@@ -4,7 +4,7 @@ import os
 import numpy as np
 from typing import List, Dict
 from strategies import find_deductions_batch
-from utils import is_solved, apply_deductions
+from utils import is_solved, apply_deductions, compute_candidates
 
 
 def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100) -> List[List[Dict]]:
@@ -24,26 +24,25 @@ def solve_batch(inputs: np.ndarray, outputs: np.ndarray, max_steps: int = 100) -
     sequences = [[] for _ in range(N)]
     
     # Strategies to use (start simple, can escalate if needed)
-    strategies = ['naked_single', 'hidden_single']  # Add more as implemented
+    strategies = ['naked_single', 'hidden_single', 'subsets', 'intersections', 'fish']
 
     for n in range(N):
         grid = grids[n]
         sequence = sequences[n]
+        candidates = compute_candidates(grid[np.newaxis])
         step = 0
         progress = True
-        
+
         while not is_solved(grid[np.newaxis])[0] and progress and step < max_steps:
-            # Find deductions
-            deductions = find_deductions_batch(grid[np.newaxis], strategies)[0]
-            
-            # Record state before applying
+            deductions = find_deductions_batch(strategies=strategies, candidates=candidates)[0]
+
             sequence.append({
                 'step': step,
-                'grid_state': grid.flatten().tolist(),  # Flat for easy serialization
+                'grid_state': grid.flatten().tolist(),
                 'deductions': deductions
             })
 
-            applied = apply_deductions(grid[np.newaxis], [deductions])
+            applied = apply_deductions(grid[np.newaxis], candidates, [deductions])
             progress = applied > 0
 
             step += 1
