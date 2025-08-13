@@ -26,12 +26,15 @@ def main():
     selected_input = inputs[idx:idx+1]
     selected_output = outputs[idx:idx+1]
     
+    print()
     print(f"Selected puzzle index: {idx} from level {level} (out of {num_puzzles} puzzles)")
+    print()
     
     sequences = solve_batch(selected_input, selected_output)
 
     # Display the step-by-step solution
     print("Solving sequence:")
+    print()
     display_sequence(selected_input[0], sequences[0])
 
 if __name__ == "__main__":
