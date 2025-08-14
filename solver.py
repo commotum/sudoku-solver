@@ -46,35 +46,29 @@ def solve_batch(
 
             for tier in range(1, max_tier + 1):
                 cumulative_strategies.extend(TIERS[tier])
+                prev_grid = grid.copy()
                 deductions = find_deductions_batch(
                     strategies=cumulative_strategies, candidates=candidates
                 )[0]
 
-                fills = [d for d in deductions if 'value' in d]
-                if fills:
-                    sequence.append(
-                        {
-                            'step': step,
-                            'grid_state': grid.flatten().tolist(),
-                            'deductions': fills,
-                        }
-                    )
-                    apply_deductions(grid[np.newaxis], candidates, [fills])
-                    progress = True
-                    break
+                if not deductions:
+                    continue
 
-                elims = [d for d in deductions if 'eliminations' in d]
-                if elims:
-                    sequence.append(
-                        {
-                            'step': step,
-                            'grid_state': grid.flatten().tolist(),
-                            'deductions': elims,
-                        }
-                    )
-                    apply_deductions(grid[np.newaxis], candidates, [elims])
-                    progress = True
-                    break
+                apply_deductions(grid[np.newaxis], candidates, [deductions])
+
+                if np.array_equal(grid, prev_grid):
+                    # No change to the grid; continue searching higher tiers
+                    continue
+
+                sequence.append(
+                    {
+                        'step': step,
+                        'grid_state': prev_grid.flatten().tolist(),
+                        'deductions': deductions,
+                    }
+                )
+                progress = True
+                break
 
             if not progress:
                 solved = False
