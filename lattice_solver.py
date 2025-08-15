@@ -44,6 +44,27 @@ def solve(grid: np.ndarray, max_steps: int = 100, max_tier: int = 5):
 
 def main():
     puzzle = np.array([
+        [0, 0, 1, 8, 3, 0, 5, 0, 0],
+        [0, 0, 0, 9, 0, 0, 8, 0, 1],
+        [9, 4, 8, 7, 1, 5, 6, 2, 3],
+        [0, 0, 2, 4, 0, 1, 9, 6, 5],
+        [0, 0, 0, 6, 0, 3, 0, 1, 0],
+        [6, 1, 0, 2, 0, 9, 3, 8, 0],
+        [5, 0, 0, 1, 2, 0, 7, 3, 6],
+        [0, 2, 6, 3, 0, 0, 1, 5, 0],
+        [1, 0, 3, 5, 0, 0, 0, 0, 0]
+    ])
+    solved, steps = solve(puzzle)
+    print(solved)
+    print(f"Solved in {len(steps)} steps")
+
+
+if __name__ == '__main__':
+    main()
+
+
+"""
+puzzle = np.array([
         [8, 3, 7, 0, 0, 1, 0, 0, 6],
         [6, 1, 4, 0, 7, 0, 9, 0, 0],
         [0, 0, 0, 0, 0, 0, 1, 0, 0],
@@ -54,10 +75,16 @@ def main():
         [0, 0, 5, 8, 0, 0, 6, 0, 0],
         [0, 9, 0, 0, 0, 4, 7, 0, 5],
     ])
-    solved, steps = solve(puzzle)
-    print(solved)
-    print(f"Solved in {len(steps)} steps")
 
-
-if __name__ == '__main__':
-    main()
+   UH oh this is impossible: 
+   [[2 6 1 8 3 0 5 9 7]
+ [5 3 9 6 4 2 8 7 1]
+ [9 4 8 7 1 5 6 2 3]
+ [3 8 2 4 7 1 9 6 5]
+ [4 9 5 6 8 3 2 1 7]
+ [6 1 7 2 5 9 3 8 4]
+ [8 5 4 1 2 8 7 3 6]
+ [7 2 6 3 9 4 1 5 9]
+ [1 9 3 5 6 6 2 4 8]]
+Solved in 4 steps
+"""

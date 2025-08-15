@@ -89,3 +89,68 @@ Sudoku strategies can be classified in a few ways, but no single taxonomy is per
 - **Single/Double/Triple**: Singles are "single," subsets scale to quad, wings/fish are fixed-size patterns (triple/quad+), chains are variable (often >3).
 - **Human-Like Progression**: Humans start with singles (obvious fills), then subsets/intersections (local patterns), then fish/wings (grid scans), and chains/trials last (deductive reasoning). Your solver should apply in this order to generate natural sequences.
 - **Implementation Tip**: All rely on candidates array. Simpler ones (singles/subsets) are unit-based and fast; chains are slower (graph traversal), so apply sparingly.
+
+
+
+∴   Therefore
+∵   Because
+∄   There Does Not Exist
+∁   Complement
+𝍸   Tally
+∈   Element of; indicates membership in a set.
+∉   Not an element of; indicates non-membership.
+
+±   
+∑
+÷
+∞
+∅   Empty set; a set with no elements.
+∩   Intersection; common elements between sets.
+∪   Union; combines elements from sets.
+⊆   Subset of or equal to; all elements of one set are in another.
+
++/−/=/</>
+
+?𝍸4
+
+| Symbol | Unicode | Meaning                                                   |
+|:------:|:-------:|:---------------------------------------------------------:|
+|   =    | U+003D  | Equality; two expressions have the same value.            |
+|   ≠    | U+2260  | Inequality; two expressions differ in value.              |
+|   <    | U+003C  | Less than; one value smaller than another.                |
+|   >    | U+003E  | Greater than; one value larger than another.              |
+|   ≤    | U+2264  | Less than or equal to; inclusive lower bound.             |
+|   ≥    | U+2265  | Greater than or equal to; inclusive upper bound.          |
+|   ≈    | U+2248  | Approximately equal; values close but not identical.      |
+|   ≡    | U+2261  | Congruent; strong equivalence or identical nature.        |
+|   ∁    | U+2201  | Complement; elements not in the original set.             |
+|   ∵    | U+2235  | Because; indicates reason in logical arguments.           |
+|   ∴    | U+2234  | Therefore; indicates conclusion in logical arguments.     |
+|   ∄    | U+2204  | Does not exist; negated existential quantifier.           |
+|   ∃    | U+2203  | There exists; existential quantifier in logic.            |
+|   ∌    | U+220C  | Does not contain; negated set membership.                 |
+|   ∋    | U+220B  | Contains member; reverse set membership relation.         |
+|   +    | U+002B  | Addition; sum of two or more values.                      |
+|   −    | U+2212  | Subtraction; difference between two values.               |
+|   ×    | U+00D7  | Multiplication; product of two values.                    |
+|   ÷    | U+00F7  | Division; quotient of two values.                         |
+|   ∑    | U+2211  | Summation; total of a series of terms.                    |
+|   ∞    | U+221E  | Infinity; unbounded or limitless quantity.                |
+|   ±    | U+00B1  | Plus-minus; indicates range or alternatives.              |
+|   ∈    | U+2208  | Element of; membership in a set.                          |
+|   ∉    | U+2209  | Not element of; non-membership in set.                    |
+|   ⊆    | U+2286  | Subset equal; all elements included in another.           |
+|   ∪    | U+222A  | Union; combines elements from multiple sets.              |
+|   ∩    | U+2229  | Intersection; common elements in sets.                    |
+|   ∅    | U+2205  | Empty set; set with no elements.                          |
+|   ∀    | U+2200  | For all; universal quantifier in logic.                   |
+|   ∃    | U+2203  | There exists; existential quantifier in logic.            |
+|   ¬    | U+00AC  | Negation; inverts truth value of operand.                 |
+|   ∧    | U+2227  | Conjunction; true if both operands true.                  |
+|   ∨    | U+2228  | Disjunction; true if at least one operand true.           |
+|   ⊕    | U+2295  | Exclusive or; true if exactly one operand true.           |
+|   ⇒    | U+21D2  | Implication; false only if antecedent T and consequent F. |
+|   ⇔    | U+21D4  | Biconditional; true if operands match in truth.           |
+|   ⊤    | U+22A4  | Tautology; always true proposition.                       |
+|   ⊥    | U+22A5  | Contradiction; always false proposition.                  |
+|   ⊢    | U+22A2  | Proves; syntactic entailment from axioms.                 |
