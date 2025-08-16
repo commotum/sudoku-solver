@@ -32,7 +32,7 @@ def run(level: int | None = None) -> int:
     If ``level`` is ``None`` choose uniformly from all available levels,
     otherwise choose a random puzzle from the specified level.
     """
-    lvl = level if (level and is_valid_level(level)) else None
+    lvl = level if (level is not None and is_valid_level(level)) else None
     if lvl is None:
         lvl = random_level()
     inputs, outputs = _load_level(lvl)
