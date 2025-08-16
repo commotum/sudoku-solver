@@ -170,3 +170,79 @@ R2C8 ≠ -8
  T = 8
  Δ = +4
 
+
+[ROW ID, COLUMN ID, ACTION ID, VALUE ID]
+
+IS ROW 8 COLUMN 2 EQUAL TO 3?
+
+? R8C2 = 3 : 
+
+Which numbers are in block 1?
+
+? ∋ B1 (Returns B1 Placements)
+? ∌ B1 (Returns B1 Absences)
+
+? ∋ C1
+? ∌ C1
+
+∋ C1 = ?
+∌ C1 ≠ ?
+
+
+allowed symbols?
+
+Is board valid?
+
+
+
+Glossary:
+
+REGION:
+A set or collection of positions (cells) on the Sudoku board. Regions are subsets of the board's positions, varying in size and structure, and serve as foundational units for constraints and puzzle structure. All regions are disjoint or overlapping collections of positions, but core gameplay constraints (e.g., uniqueness of digits 1–9) apply specifically to certain region types.
+
+    REGION:SQUARE
+        The atomic (smallest indivisible) region. A singleton set consisting of exactly one position, which may hold a given digit (1–9) or a set of candidate digits during solving.
+
+    REGION:HOUSE
+        An intermediate region consisting of exactly nine positions, where the digits 1–9 must each appear exactly once (the core uniqueness constraint of Sudoku). Houses form the primary partitioning of the board into constraint-bearing groups and are categorized into three subtypes based on their geometric arrangement.
+
+        REGION:HOUSE:ROW
+            A horizontal house: the set of nine positions sharing the same row index (typically denoted as rows 1–9 from top to bottom).
+
+        REGION:HOUSE:COLUMN
+            A vertical house: the set of nine positions sharing the same column index (typically denoted as columns 1–9 from left to right).
+
+        REGION:HOUSE:BOX
+            A block house: the set of nine positions forming a 3×3 subgrid (typically denoted as boxes 1–9, arranged in a 3×3 meta-grid from top-left to bottom-right).
+
+    REGION:BOARD
+        The maximal (universal) region: the complete set of 81 positions, arranged in a 9×9 grid subdivided into 9 rows, 9 columns, and 9 boxes. The board is the union of all houses and the domain over which the puzzle is defined and solved.
+
+REGION:BAND
+    A horizontal meta-region (also called a "chute" in some contexts) consisting of exactly 27 positions, formed by three consecutive rows (thus encompassing three full houses of the row subtype and one horizontal row of three 3×3 boxes). Bands partition the board into three non-overlapping horizontal strips (typically labeled 1–3 from top to bottom) and are used in puzzle structure, variant rules, and advanced solving techniques (e.g., band-based patterns or symmetries).
+
+REGION:STACK
+    A vertical meta-region (also called a "chute" in some contexts) consisting of exactly 27 positions, formed by three consecutive columns (thus encompassing three full houses of the column subtype and one vertical column of three 3×3 boxes). Stacks partition the board into three non-overlapping vertical strips (typically labeled 1–3 from left to right) and are used analogously to bands in puzzle structure, variant rules, and advanced solving techniques (e.g., stack-based patterns or symmetries).
+
+
+A denoted position that holds either a forced/known value or a set of candidates.
+BOARD - Place 2, A collection of SQUARES arranged in a 9x9 grid containing initial values and empty cells
+ROW
+COLUMN
+BOX
+HOUSE
+BAND
+STACK
+
+
+ASSIGN - Action 1, Filling an unfilled square with a Forced Value
+EXCLUDE - Action 2, Removing a value from an unfilled squares candidate set
+ASSUME - The act of filling an unfilled square with an uncertain value
+ADVANCE - 
+
+BOARD - Space 1, dimensions 9x9, contains initial values and placed values
+HOUSE — any row, column, or box.
+ROW - horizontal 
+COLUMN - 
+
+Contradiction – In Sudoku an illegal and therefore contradictory situation can occur if a) there are no candidates left in a cell, or b) two or more cells claim to be true. The aim of many strategies is to show a contradiction.
