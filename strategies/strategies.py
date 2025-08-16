@@ -16,7 +16,7 @@ from .fish import (
     find_swordfish_rows,
     find_swordfish_cols,
 )
-from utils import compute_candidates
+from engine.utils import compute_candidates
 # Dictionary mapping strategy names to functions
 STRATEGY_FUNCTIONS = {
     'naked_single': find_naked_singles,

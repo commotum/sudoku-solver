@@ -4,7 +4,7 @@ import os
 import numpy as np
 from typing import List, Dict, Tuple
 from strategies import find_deductions_batch, TIERS
-from utils import is_solved, apply_deductions, compute_candidates
+from .utils import is_solved, apply_deductions, compute_candidates
 
 
 def solve_batch(

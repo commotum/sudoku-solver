@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from utils import compute_candidates, apply_deductions
+from .utils import compute_candidates, apply_deductions
 
 
 def pretty_print_grid(grid: np.ndarray, prev_grid: np.ndarray = None) -> None:

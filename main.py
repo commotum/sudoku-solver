@@ -1,62 +1,107 @@
-# Entry point: Args for difficulty levels/subsample, calls dataset_download if needed, then solver
+#!/usr/bin/env python3
+"""Sudoku CLI entry point."""
+
+from __future__ import annotations
 
 import argparse
-import numpy as np
-import random
-import datetime
-from solver import solve_batch
-from display import (
-    display_sequence,
-    print_program_header,
-    print_puzzle_selection,
-    print_initial_grid,
-    print_step_header,
-    print_final_output,
-)
 
-def main():
-    parser = argparse.ArgumentParser(description="Run the Sudoku solver")
-    parser.add_argument(
-        "--level",
-        type=int,
-        default=0,
-        help="Difficulty level to choose from",
+from modes import daily_puzzle, random_puzzle, level_puzzle
+from engine.utils import is_valid_level
+
+
+def _prompt_mode() -> str:
+    mode = input("Choose mode [daily/random/level]: ").strip().lower()
+    return mode
+
+
+def _prompt_level() -> int | None:
+    raw = input("Enter level (positive integer): ").strip()
+    if not raw:
+        return None
+    try:
+        val = int(raw)
+    except ValueError:
+        print("Invalid level: must be an integer.")
+        return None
+    if val <= 0:
+        print("Invalid level: must be > 0.")
+        return None
+    if not is_valid_level(val):
+        print(f"Level {val} not found in available data.")
+        return None
+    return val
+
+
+def _interactive() -> int:
+    mode = _prompt_mode()
+    if mode not in {"daily", "random", "level"}:
+        print("Invalid mode.")
+        return 2
+
+    level = None
+    if mode == "level":
+        level = _prompt_level()
+        if level is None:
+            return 2
+        return level_puzzle.run(level=level)
+    else:
+        maybe = _prompt_level()
+        if maybe is not None:
+            level = maybe
+        if mode == "daily":
+            return daily_puzzle.run(level=level)
+        if mode == "random":
+            return random_puzzle.run(level=level)
+    return 2
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="sudoku", description="Sudoku 9x9 CLI")
+    sub = p.add_subparsers(dest="cmd")
+
+    sp = sub.add_parser(
+        "daily", help="Play a daily puzzle (optionally from a specific level)"
     )
-    args = parser.parse_args()
-    level = args.level
+    sp.add_argument("--level", type=int, help="Integer level id")
 
-    data_dir = "data/sudoku-extreme-processed"
-    inputs_path = f"{data_dir}/lvl-{level}-inputs.npy"
-    outputs_path = f"{data_dir}/lvl-{level}-outputs.npy"
-
-    inputs = np.load(inputs_path)
-    outputs = np.load(outputs_path)
-
-    num_puzzles = inputs.shape[0]
-
-    # Seed random with date for reproducible "daily" selection
-    today = datetime.date.today()
-    random.seed(today.toordinal())
-
-    idx = random.randint(0, num_puzzles - 1)
-
-    selected_input = inputs[idx : idx + 1]
-    selected_output = outputs[idx : idx + 1]
-
-    print_program_header()
-    print_puzzle_selection(level, num_puzzles, idx)
-    print_initial_grid(selected_input[0])
-
-    sequences, solved_flags = solve_batch(selected_input, selected_output)
-
-    print_step_header()
-
-    # Display the step-by-step solution and gather summary
-    final_grid, steps, total_placements = display_sequence(
-        selected_input[0], sequences[0]
+    sp = sub.add_parser(
+        "random", help="Play a totally random puzzle (optionally restricted to a level)"
     )
+    sp.add_argument("--level", type=int, help="Integer level id")
 
-    print_final_output(final_grid, steps, total_placements, solved_flags[0])
+    sp = sub.add_parser(
+        "level", help="Play a random puzzle from a specific level"
+    )
+    sp.add_argument("--level", type=int, required=True, help="Integer level id")
+
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if not args.cmd:
+        return _interactive()
+
+    if args.cmd == "daily":
+        if args.level is not None and not is_valid_level(args.level):
+            parser.error(f"Invalid level: {args.level}")
+        return daily_puzzle.run(level=args.level)
+
+    if args.cmd == "random":
+        if args.level is not None and not is_valid_level(args.level):
+            parser.error(f"Invalid level: {args.level}")
+        return random_puzzle.run(level=args.level)
+
+    if args.cmd == "level":
+        if not is_valid_level(args.level):
+            parser.error(f"Invalid level: {args.level}")
+        return level_puzzle.run(level=args.level)
+
+    parser.print_help()
+    return 2
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
