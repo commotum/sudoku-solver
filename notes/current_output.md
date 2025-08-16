@@ -320,3 +320,35 @@ Puzzle Solved!
 
 ====================================
 
+
+
+
+.
+├── pyproject.toml
+├── README.md
+├── data/                     # runtime data (gitignored or small samples only)
+├── utilities/
+│   └── dataset_download.py
+├── core/
+
+│   ├── __init__.py
+    ├── __main__.py       # enables: python -m sudoku9x9
+│   ├── cli.py            # CLI entry (argparse/Typer)
+│   ├── modes/
+│       │   ├── daily.py
+│       │   ├── random_mode.py
+│       │   └── selection.py
+│       ├── core/
+│       │   ├── display.py
+│       │   ├── solver.py
+│       │   └── utils.py
+│       └── strategies/
+│           ├── __init__.py
+│           ├── base.py       # previously strategy/strategies.py
+│           ├── singles.py
+│           ├── intersections.py
+│           ├── subsets.py
+│           ├── wings.py
+│           ├── fish.py
+│           └── chains.py
+└── tests/
