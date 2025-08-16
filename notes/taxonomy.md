@@ -246,3 +246,87 @@ ROW - horizontal
 COLUMN - 
 
 Contradiction – In Sudoku an illegal and therefore contradictory situation can occur if a) there are no candidates left in a cell, or b) two or more cells claim to be true. The aim of many strategies is to show a contradiction.
+
+
+
+---
+
+Notes:
+
+> The first thing to consider about the way a human being tackles the problem is
+> that a puzzle is never submitted in a purely logical form; on the contrary, it is always
+> centred on a spatial presentation[^2], i.e.: "complete the following grid…".
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Prologue**, p. 14.
+
+[^2]: Notice that the same remark applies to most of the so called logical games.
+
+```bibtex
+@book{berthier2007hiddenlogic,
+  author    = {Denis Berthier},
+  title     = {The Hidden Logic of Sudoku},
+  edition   = {2nd},
+  year      = {2007},
+  isbn      = {978-1-84799-214-7}
+}
+```
+
+---
+
+> In every cell, one writes either the number that must definitely occupy it or (with a pencil and in smaller size) the list of all its "candidates", i.e. of all the numbers that may still occupy it. Solving the grid then consists of progressively reducing this list of candidates by constraints propagation, until only one possibility remains for each cell.
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Prologue**, pp. 14–15.
+
+---
+
+> This universal spatial presentation of the puzzle, together with the associated model of cells to be filled with one number each, hide some logical symmetries of the problem. And considering that eliciting these symmetries leads to the quasi identification of complex rules (such as X-Wing, Swordfish and Jellyfish) with apparently much simpler ones (such as Naked Pairs, Naked Triplets and Naked Quadruplets respectively), there is a mathematical beauty in it.
+>
+> As everybody knows, the Powers of Darkness do not like Beauty.
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Prologue**, p. 15.
+
+---
+
+> One vicious thing leading to a virtuous one, the whole process ended with this book
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Prologue**, p. 15.
+
+---
+
+> **1.1. Statement of the Sudoku problem**  
+> Given a 9x9 grid, partially filled with numbers from 1 to 9 (the "entries" of the
+> problem, also called the "clues" or the "givens"), complete it with numbers from 1 to
+> 9 so that in every of the nine rows, in every of the nine columns and in every of the
+> nine disjoint blocks of 3x3 contiguous cells, the following property holds:
+> – there is at most one occurrence of each of these numbers.
+>
+> …
+>
+> Since rows, columns and blocks play similar roles in the defining constraints,
+> they will naturally appear to do so in many other places and it is convenient to introduce a word that makes no difference between them: a unit is either a row or a
+> column or a block. And we say that two cells share a unit if they are either in the
+> same row or in the same column or in the same block (where "or" is non exclusive).
+> We also say that these two cells are linked, or that they see each other. It should be
+> noticed that this (symmetric) relation between two cells, whichever of the three
+> equivalent names it is given, does not depend in any way on the content of these
+> cells but only on their place in the grid; it is therefore a straightforward and quasi
+> physical notion.
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Introduction**, p. 17.
+
+---
+
+> Figure 1 below shows the standard presentations of a problem grid (also called a
+> puzzle) and of a solution grid (also called a complete Sudoku grid).
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Introduction**, p. 18.
+
+---
+
+> The process of solving a grid "by hand" is generally initialised
+> by defining the "candidates" for each cell. For later formalisation, one must give a
+> careful definition of this notion: at any stage of the resolution process, candidates
+> for a cell are the numbers that are not yet explicitly known to be impossible values
+> for this cell.
+>
+> — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Introduction**, p. 19.
