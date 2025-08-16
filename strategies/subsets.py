@@ -1,183 +1,191 @@
+# Subsets strategies: Naked/Hidden Pairs/Triplets/Quads (row/col/box variants)
+
 import numpy as np
 from itertools import combinations
 
-
-def _bitmask(arr: np.ndarray) -> np.ndarray:
-    return arr.astype(int) @ (1 << np.arange(9))
-
-
-def naked_subsets(lattice: np.ndarray, grid: np.ndarray, sizes=(2, 3, 4)) -> list[dict]:
-    """Find naked pairs/triples/quads in rows, columns and boxes."""
-    deductions: list[dict] = []
+def find_naked_subsets(candidates: np.ndarray, all_deductions: list[list[dict]], sizes: list[int] = [2, 3, 4], units: list[str] = ['row', 'col', 'box']):
+    """
+    Finds naked subsets (pairs, triplets, quads) in specified units.
+    A naked subset is a group of k cells in a unit that together have exactly k candidates.
+    Eliminates those candidates from other cells in the unit.
+    """
+    N = candidates.shape[0]
     for size in sizes:
-        # Rows
-        for r in range(9):
-            unit = lattice[r]
-            masks = _bitmask(unit)
-            mask_map: dict[int, list[int]] = {}
-            for c in range(9):
-                if grid[r, c] != 0:
-                    continue
-                mask = int(masks[c])
-                if mask == 0:
-                    continue
-                if mask.bit_count() == size:
-                    mask_map.setdefault(mask, []).append(c)
-            for mask, cols in mask_map.items():
-                if len(cols) != size:
-                    continue
-                digits = [d + 1 for d in range(9) if mask >> d & 1]
-                elims = []
-                for c in range(9):
-                    if c in cols or grid[r, c] != 0:
-                        continue
-                    rem = [v for v in digits if lattice[r, c, v - 1]]
-                    if rem:
-                        elims.append(((r, c), rem))
-                if elims:
-                    deductions.append({'type': f'naked_{size}_row',
-                                       'positions': [(r, c) for c in cols],
-                                       'values': digits,
-                                       'eliminations': elims})
-        # Columns
-        for c in range(9):
-            unit = lattice[:, c]
-            masks = _bitmask(unit)
-            mask_map: dict[int, list[int]] = {}
-            for r in range(9):
-                if grid[r, c] != 0:
-                    continue
-                mask = int(masks[r])
-                if mask == 0:
-                    continue
-                if mask.bit_count() == size:
-                    mask_map.setdefault(mask, []).append(r)
-            for mask, rows in mask_map.items():
-                if len(rows) != size:
-                    continue
-                digits = [d + 1 for d in range(9) if mask >> d & 1]
-                elims = []
-                for r in range(9):
-                    if r in rows or grid[r, c] != 0:
-                        continue
-                    rem = [v for v in digits if lattice[r, c, v - 1]]
-                    if rem:
-                        elims.append(((r, c), rem))
-                if elims:
-                    deductions.append({'type': f'naked_{size}_col',
-                                       'positions': [(r, c) for r in rows],
-                                       'values': digits,
-                                       'eliminations': elims})
-        # Boxes
-        for br in range(3):
-            for bc in range(3):
-                box = lattice[br*3:(br+1)*3, bc*3:(bc+1)*3]
-                masks = _bitmask(box.reshape(9, 9))
-                mask_map: dict[int, list[int]] = {}
-                for idx in range(9):
-                    r, c = divmod(idx, 3)
-                    R, C = br*3 + r, bc*3 + c
-                    if grid[R, C] != 0:
-                        continue
-                    mask = int(masks[idx])
-                    if mask == 0:
-                        continue
-                    if mask.bit_count() == size:
-                        mask_map.setdefault(mask, []).append(idx)
-                for mask, idxs in mask_map.items():
-                    if len(idxs) != size:
-                        continue
-                    digits = [d + 1 for d in range(9) if mask >> d & 1]
-                    elims = []
-                    for idx in range(9):
-                        if idx in idxs:
+        for unit_type in units:
+            if unit_type == 'row':
+                for n in range(N):
+                    for r in range(9):
+                        unit_cand = candidates[n, r, :, :]
+                        empty_cells = np.where(np.any(unit_cand, axis=1))[0]  # indices of cells with candidates
+                        if len(empty_cells) < size:
                             continue
-                        r, c = divmod(idx, 3)
-                        R, C = br*3 + r, bc*3 + c
-                        if grid[R, C] != 0:
+                        for cell_comb in combinations(empty_cells, size):
+                            subset_cand = unit_cand[list(cell_comb), :]
+                            union = np.any(subset_cand, axis=0)
+                            if np.sum(union) == size:
+                                # Valid naked subset
+                                elim_vals = np.where(union)[0] + 1
+                                other_cells = [j for j in range(9) if j not in cell_comb]
+                                elims = []
+                                for j in other_cells:
+                                    cell_elim = np.where(unit_cand[j] & union)[0] + 1
+                                    if len(cell_elim) > 0:
+                                        elims.append(((r, j), list(cell_elim)))
+                                if elims:
+                                    all_deductions[n].append({
+                                        'type': f'naked_{size}_{unit_type}',
+                                        'positions': [(r, j) for j in cell_comb],
+                                        'values': list(elim_vals),
+                                        'eliminations': elims
+                                    })
+            elif unit_type == 'col':
+                for n in range(N):
+                    for c in range(9):
+                        unit_cand = candidates[n, :, c, :]
+                        empty_cells = np.where(np.any(unit_cand, axis=1))[0]
+                        if len(empty_cells) < size:
                             continue
-                        rem = [v for v in digits if lattice[R, C, v - 1]]
-                        if rem:
-                            elims.append(((R, C), rem))
-                    if elims:
-                        positions = []
-                        for idx in idxs:
-                            r, c = divmod(idx, 3)
-                            positions.append((br*3 + r, bc*3 + c))
-                        deductions.append({'type': f'naked_{size}_box',
-                                           'positions': positions,
-                                           'values': digits,
-                                           'eliminations': elims})
-    return deductions
+                        for cell_comb in combinations(empty_cells, size):
+                            subset_cand = unit_cand[list(cell_comb), :]
+                            union = np.any(subset_cand, axis=0)
+                            if np.sum(union) == size:
+                                elim_vals = np.where(union)[0] + 1
+                                other_cells = [i for i in range(9) if i not in cell_comb]
+                                elims = []
+                                for i in other_cells:
+                                    cell_elim = np.where(unit_cand[i] & union)[0] + 1
+                                    if len(cell_elim) > 0:
+                                        elims.append(((i, c), list(cell_elim)))
+                                if elims:
+                                    all_deductions[n].append({
+                                        'type': f'naked_{size}_{unit_type}',
+                                        'positions': [(i, c) for i in cell_comb],
+                                        'values': list(elim_vals),
+                                        'eliminations': elims
+                                    })
+            elif unit_type == 'box':
+                for n in range(N):
+                    for br in range(3):
+                        for bc in range(3):
+                            sub_cand = candidates[n, br*3:(br+1)*3, bc*3:(bc+1)*3, :]
+                            flat_cand = sub_cand.reshape(9, 9)
+                            empty_cells = np.where(np.any(flat_cand, axis=1))[0]
+                            if len(empty_cells) < size:
+                                continue
+                            for cell_comb in combinations(empty_cells, size):
+                                subset_cand = flat_cand[list(cell_comb), :]
+                                union = np.any(subset_cand, axis=0)
+                                if np.sum(union) == size:
+                                    elim_vals = np.where(union)[0] + 1
+                                    other_cells = [idx for idx in range(9) if idx not in cell_comb]
+                                    elims = []
+                                    for idx in other_cells:
+                                        sr, sc = divmod(idx, 3)
+                                        i, j = br*3 + sr, bc*3 + sc
+                                        cell_elim = np.where(flat_cand[idx] & union)[0] + 1
+                                        if len(cell_elim) > 0:
+                                            elims.append(((i, j), list(cell_elim)))
+                                    if elims:
+                                        all_deductions[n].append({
+                                            'type': f'naked_{size}_{unit_type}',
+                                            'positions': [(br*3 + divmod(idx, 3)[0], bc*3 + divmod(idx, 3)[1]) for idx in cell_comb],
+                                            'values': list(elim_vals),
+                                            'eliminations': elims
+                                        })
 
-
-def hidden_subsets(lattice: np.ndarray, grid: np.ndarray, sizes=(2, 3, 4)) -> list[dict]:
-    """Find hidden pairs/triples/quads in rows, columns and boxes."""
-    deductions: list[dict] = []
-    nums = np.arange(9)
+def find_hidden_subsets(candidates: np.ndarray, all_deductions: list[list[dict]], sizes: list[int] = [2, 3, 4], units: list[str] = ['row', 'col', 'box']):
+    """
+    Finds hidden subsets in specified units.
+    A hidden subset is a group of k candidates that appear only in exactly k cells in the unit.
+    Eliminates other candidates from those cells.
+    """
+    N = candidates.shape[0]
     for size in sizes:
-        # Rows
-        for r in range(9):
-            unit = lattice[r]
-            cand_cells = [set(np.where(unit[:, k])[0]) for k in range(9)]
-            for comb in combinations(nums, size):
-                pos = set.union(*(cand_cells[k] for k in comb))
-                if len(pos) != size:
-                    continue
-                elims = []
-                for c in pos:
-                    other = [v + 1 for v in nums if v not in comb and lattice[r, c, v]]
-                    if other:
-                        elims.append(((r, int(c)), other))
-                if elims:
-                    positions = [(r, int(c)) for c in pos]
-                    digits = [int(k + 1) for k in comb]
-                    deductions.append({'type': f'hidden_{size}_row',
-                                       'positions': positions,
-                                       'values': digits,
-                                       'eliminations': elims})
-        # Columns
-        for c in range(9):
-            unit = lattice[:, c]
-            cand_cells = [set(np.where(unit[:, k])[0]) for k in range(9)]
-            for comb in combinations(nums, size):
-                pos = set.union(*(cand_cells[k] for k in comb))
-                if len(pos) != size:
-                    continue
-                elims = []
-                for r in pos:
-                    other = [v + 1 for v in nums if v not in comb and lattice[r, c, v]]
-                    if other:
-                        elims.append(((int(r), c), other))
-                if elims:
-                    positions = [(int(r), c) for r in pos]
-                    digits = [int(k + 1) for k in comb]
-                    deductions.append({'type': f'hidden_{size}_col',
-                                       'positions': positions,
-                                       'values': digits,
-                                       'eliminations': elims})
-        # Boxes
-        for br in range(3):
-            for bc in range(3):
-                box = lattice[br*3:(br+1)*3, bc*3:(bc+1)*3]
-                cand_cells = [set(np.where(box.reshape(9, 9)[:, k])[0]) for k in range(9)]
-                for comb in combinations(nums, size):
-                    pos = set.union(*(cand_cells[k] for k in comb))
-                    if len(pos) != size:
-                        continue
-                    elims = []
-                    positions = []
-                    for idx in pos:
-                        r, c = divmod(idx, 3)
-                        R, C = br*3 + r, bc*3 + c
-                        other = [v + 1 for v in nums if v not in comb and lattice[R, C, v]]
-                        if other:
-                            elims.append(((R, C), other))
-                        positions.append((R, C))
-                    if elims:
-                        digits = [int(k + 1) for k in comb]
-                        deductions.append({'type': f'hidden_{size}_box',
-                                           'positions': positions,
-                                           'values': digits,
-                                           'eliminations': elims})
-    return deductions
+        for unit_type in units:
+            if unit_type == 'row':
+                for n in range(N):
+                    for r in range(9):
+                        unit_cand = candidates[n, r, :, :]
+                        cand_counts = np.sum(unit_cand, axis=0)  # count per num
+                        low_freq_cands = np.where((cand_counts > 0) & (cand_counts <= size))[0]
+                        if len(low_freq_cands) < size:
+                            continue
+                        for cand_comb in combinations(low_freq_cands, size):
+                            positions = [np.where(unit_cand[:, k])[0] for k in cand_comb]
+                            union_pos = np.unique(np.concatenate(positions))
+                            if len(union_pos) == size:
+                                # Valid hidden subset
+                                vals = list(np.array(cand_comb) + 1)
+                                pos_list = [(r, int(j)) for j in union_pos]
+                                elims = []
+                                for j in union_pos:
+                                    other_cands = np.where(unit_cand[j] & ~np.isin(np.arange(9), cand_comb))[0] + 1
+                                    if len(other_cands) > 0:
+                                        elims.append(((r, int(j)), list(other_cands)))
+                                if elims:
+                                    all_deductions[n].append({
+                                        'type': f'hidden_{size}_{unit_type}',
+                                        'positions': pos_list,
+                                        'values': vals,
+                                        'eliminations': elims
+                                    })
+            elif unit_type == 'col':
+                for n in range(N):
+                    for c in range(9):
+                        unit_cand = candidates[n, :, c, :]
+                        cand_counts = np.sum(unit_cand, axis=0)
+                        low_freq_cands = np.where((cand_counts > 0) & (cand_counts <= size))[0]
+                        if len(low_freq_cands) < size:
+                            continue
+                        for cand_comb in combinations(low_freq_cands, size):
+                            positions = [np.where(unit_cand[:, k])[0] for k in cand_comb]
+                            union_pos = np.unique(np.concatenate(positions))
+                            if len(union_pos) == size:
+                                vals = list(np.array(cand_comb) + 1)
+                                pos_list = [(int(i), c) for i in union_pos]
+                                elims = []
+                                for i in union_pos:
+                                    other_cands = np.where(unit_cand[i] & ~np.isin(np.arange(9), cand_comb))[0] + 1
+                                    if len(other_cands) > 0:
+                                        elims.append(((int(i), c), list(other_cands)))
+                                if elims:
+                                    all_deductions[n].append({
+                                        'type': f'hidden_{size}_{unit_type}',
+                                        'positions': pos_list,
+                                        'values': vals,
+                                        'eliminations': elims
+                                    })
+            elif unit_type == 'box':
+                for n in range(N):
+                    for br in range(3):
+                        for bc in range(3):
+                            sub_cand = candidates[n, br*3:(br+1)*3, bc*3:(bc+1)*3, :]
+                            flat_cand = sub_cand.reshape(9, 9)
+                            cand_counts = np.sum(flat_cand, axis=0)
+                            low_freq_cands = np.where((cand_counts > 0) & (cand_counts <= size))[0]
+                            if len(low_freq_cands) < size:
+                                continue
+                            for cand_comb in combinations(low_freq_cands, size):
+                                positions = [np.where(flat_cand[:, k])[0] for k in cand_comb]
+                                union_pos = np.unique(np.concatenate(positions))
+                                if len(union_pos) == size:
+                                    vals = list(np.array(cand_comb) + 1)
+                                    pos_list = []
+                                    for idx in union_pos:
+                                        sr, sc = divmod(idx, 3)
+                                        i, j = br*3 + sr, bc*3 + sc
+                                        pos_list.append((i, j))
+                                    elims = []
+                                    for idx in union_pos:
+                                        sr, sc = divmod(idx, 3)
+                                        i, j = br*3 + sr, bc*3 + sc
+                                        other_cands = np.where(flat_cand[idx] & ~np.isin(np.arange(9), cand_comb))[0] + 1
+                                        if len(other_cands) > 0:
+                                            elims.append(((i, j), list(other_cands)))
+                                    if elims:
+                                        all_deductions[n].append({
+                                            'type': f'hidden_{size}_{unit_type}',
+                                            'positions': pos_list,
+                                            'values': vals,
+                                            'eliminations': elims
+                                        })
