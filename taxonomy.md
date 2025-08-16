@@ -154,3 +154,19 @@ Sudoku strategies can be classified in a few ways, but no single taxonomy is per
 |   ⊤    | U+22A4  | Tautology; always true proposition.                       |
 |   ⊥    | U+22A5  | Contradiction; always false proposition.                  |
 |   ⊢    | U+22A2  | Proves; syntactic entailment from axioms.                 |
+
+
+ASSIGN, EXCLUDE, ASSUME
+ASSERT, REJECT, PROPOSE
+
+R2C8 = 8
+R2C8 ≠ 8
+R2C8 = -8
+R2C8 ≠ -8
+
+
+ T-8:  Δ +4
+
+ T = 8
+ Δ = +4
+

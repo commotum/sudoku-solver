@@ -35,3 +35,29 @@ TODO:
 
 1. Ensure that if there are no changes made to the grid even after escalating through all available tiers that the solve loop returns early and marks a boolean, solved = False. No need to run steps 8-100 if none of those steps will add new strategies we can use.
 2. Update the puzzle solved display function so that it only says solved if we find a solution. It shouldn't by default print, "Puzzle Solved!"
+
+
+
+T1  Receive Task [Sudoku]
+T2  Inspect Task [Sudoku]
+    Rows [9]
+    Stacks [9]
+    Board [ ┌───────┬───────┬───────┐
+            │ 8 3 7 │ . . 1 │ . . 6 │
+            │ 6 1 4 │ . 7 . │ 9 . . │
+            │ . . . │ . . . │ 1 . . │
+            ├───────┼───────┼───────┤
+            │ . . . │ 2 4 3 │ . . . │
+            │ . . 2 │ . . . │ . 6 . │
+            │ . 7 . │ 6 . . │ 2 . 4 │
+            ├───────┼───────┼───────┤
+            │ . . . │ . . . │ . 2 9 │
+            │ . . 5 │ 8 . . │ 6 . . │
+            │ . 9 . │ . . 4 │ 7 . 5 │
+            └───────┴───────┴───────┘ ] (Maybe this is just a list of the filled spaces with their values like address and value? idk)
+T3  Make Lattice [
+    9x9x9 all 1s
+]
+T4  Update Lattice [
+    There's probably a better name for this?
+]
