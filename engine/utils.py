@@ -183,7 +183,7 @@ def available_levels() -> list[int]:
 
 def is_valid_level(level: int) -> bool:
     """Return ``True`` if ``level`` is a positive integer and exists."""
-    return level > 0 and level in set(available_levels())
+    return level >= 0 and level in set(available_levels())
 
 
 def random_level() -> int:
