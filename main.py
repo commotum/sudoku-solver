@@ -15,7 +15,7 @@ def _prompt_mode() -> str:
 
 
 def _prompt_level() -> int | None:
-    raw = input("Enter level (positive integer): ").strip()
+    raw = input("Enter level (non-negative integer): ").strip()
     if not raw:
         return None
     try:
@@ -57,23 +57,22 @@ def _interactive() -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="sudoku", description="Sudoku 9x9 CLI")
-    sub = p.add_subparsers(dest="cmd")
-
-    sp = sub.add_parser(
-        "daily", help="Play a daily puzzle (optionally from a specific level)"
+    group = p.add_mutually_exclusive_group()
+    group.add_argument(
+        "-d", "--daily", action="store_true", help="Play the daily puzzle"
     )
-    sp.add_argument("--level", type=int, help="Integer level id")
-
-    sp = sub.add_parser(
-        "random", help="Play a totally random puzzle (optionally restricted to a level)"
+    group.add_argument(
+        "-r", "--random", action="store_true", help="Play a random puzzle"
     )
-    sp.add_argument("--level", type=int, help="Integer level id")
-
-    sp = sub.add_parser(
-        "level", help="Play a random puzzle from a specific level"
+    p.add_argument(
+        "-l",
+        "--level",
+        type=int,
+        help=(
+            "Integer level id. If used without --daily or --random, "
+            "plays a random puzzle from that level."
+        ),
     )
-    sp.add_argument("--level", type=int, required=True, help="Integer level id")
-
     return p
 
 
@@ -81,20 +80,21 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if not args.cmd:
+    no_args = not (args.daily or args.random or args.level is not None)
+    if no_args:
         return _interactive()
 
-    if args.cmd == "daily":
+    if args.daily:
         if args.level is not None and not is_valid_level(args.level):
             parser.error(f"Invalid level: {args.level}")
         return daily_puzzle.run(level=args.level)
 
-    if args.cmd == "random":
+    if args.random:
         if args.level is not None and not is_valid_level(args.level):
             parser.error(f"Invalid level: {args.level}")
         return random_puzzle.run(level=args.level)
 
-    if args.cmd == "level":
+    if args.level is not None:
         if not is_valid_level(args.level):
             parser.error(f"Invalid level: {args.level}")
         return level_puzzle.run(level=args.level)

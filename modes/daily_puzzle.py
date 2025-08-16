@@ -32,7 +32,7 @@ def run(level: int | None = None) -> int:
     If ``level`` is provided and valid, select the daily puzzle from that
     level. Otherwise a random level is chosen.
     """
-    lvl = level if (level and is_valid_level(level)) else random_level()
+    lvl = level if (level is not None and is_valid_level(level)) else random_level()
     inputs, outputs = _load_level(lvl)
     num_puzzles = inputs.shape[0]
 
