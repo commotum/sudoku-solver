@@ -330,3 +330,26 @@ Notes:
 > for this cell.
 >
 > — Denis Berthier, *The Hidden Logic of Sudoku*, 2nd ed., **Introduction**, p. 19.
+
+
+
+
+# From Examples to Rules: Six Essential Questions
+
+1. What’s essential vs. coincidence?
+   From the examples, which relationships are truly part of the rule, and which are just accidental details?
+
+2. What’s required vs. optional in each cell?
+   Which candidates must be present, which can be missing, and are any extra candidates allowed?
+
+3. How do we stop it collapsing into something simpler?
+   What conditions prevent the pattern from degenerating into basic techniques (like Naked Quads)?
+
+4. Can the structure be generalized?
+   Does this fit into a bigger family of patterns or larger shapes/grids beyond the standard 9×9 case?
+
+5. What are the basic building blocks?
+   Which primitives (e.g., crosses or x2y2 segments) best capture the idea—and which are more “atomic” for proofs?
+
+6. Where does it sit in the difficulty hierarchy?
+   How should we rank/classify its complexity (e.g., roughly a 16-variable pattern) so the rule is stated precisely?
