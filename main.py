@@ -23,8 +23,8 @@ def _prompt_level() -> int | None:
     except ValueError:
         print("Invalid level: must be an integer.")
         return None
-    if val <= 0:
-        print("Invalid level: must be > 0.")
+    if val < 0:
+        print("Invalid level: must be >= 0.")
         return None
     if not is_valid_level(val):
         print(f"Level {val} not found in available data.")
