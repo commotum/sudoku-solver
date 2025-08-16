@@ -1,5 +1,10 @@
 # Helpers: Grid validation, apply_deduction, candidate computation
 
+from pathlib import Path
+import os
+import re
+import random
+
 import numpy as np
 
 
@@ -148,3 +153,42 @@ def apply_deductions(
                             applied_count += 1
 
     return applied_count
+
+
+def repo_root() -> Path:
+    """Return the repository root directory."""
+    return Path(__file__).resolve().parents[1]
+
+
+def data_dir() -> Path:
+    """Return the base data directory.
+
+    Default location is ``repo_root()/"data"/"sudoku-extreme-processed"``.
+    The ``SUDOKU_DATA_DIR`` environment variable can override it.
+    """
+    default = repo_root() / "data" / "sudoku-extreme-processed"
+    return Path(os.environ.get("SUDOKU_DATA_DIR", default))
+
+
+def available_levels() -> list[int]:
+    """Discover available integer levels from the data layout."""
+    base = data_dir()
+    levels: set[int] = set()
+    for p in base.glob("lvl-*-inputs.npy"):
+        m = re.search(r"lvl-(\d+)-inputs\.npy", p.name)
+        if m:
+            levels.add(int(m.group(1)))
+    return sorted(levels)
+
+
+def is_valid_level(level: int) -> bool:
+    """Return ``True`` if ``level`` is a positive integer and exists."""
+    return level > 0 and level in set(available_levels())
+
+
+def random_level() -> int:
+    """Return a random available level."""
+    levels = available_levels()
+    if not levels:
+        raise RuntimeError("No levels available in data directory")
+    return random.choice(levels)
