@@ -353,3 +353,6 @@ Notes:
 
 6. Where does it sit in the difficulty hierarchy?
    How should we rank/classify its complexity (e.g., roughly a 16-variable pattern) so the rule is stated precisely?
+
+
+CLIPS (C Language Integrated Production System) is a classic, embeddable expert-system shell created at NASA in the 1980s by Gary Riley. It’s designed for building knowledge-based programs—especially rule-based systems—and is still widely used for teaching and for small, reliable production rule engines.
