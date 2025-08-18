@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: MIT
-"""Print list and command for a random puzzle from a given level."""
+"""Print puzzle list and solve command for a random level puzzle.
+
+The formatted command is also copied to the clipboard if possible.
+"""
 
 from __future__ import annotations
 
@@ -12,6 +15,17 @@ if __package__ is None:  # allow running as a script
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from engine.utils import data_dir, is_valid_level
+
+
+def _copy(text: str) -> None:
+    """Best-effort copy ``text`` to the system clipboard."""
+    try:
+        import pyperclip  # type: ignore
+
+        pyperclip.copy(text)
+    except Exception:
+        # Ignore all clipboard errors (missing dependency, no display, etc.)
+        pass
 
 
 def _load_level(level: int) -> np.ndarray:
@@ -30,7 +44,9 @@ def run(level: int) -> int:
     puzzle_list = puzzle.flatten().tolist()
     puzzle_str = "".join(str(n) if n else "." for n in puzzle_list)
     print(puzzle_list)
-    print(f'(solve "{puzzle_str}")')
+    solve_cmd = f'(solve "{puzzle_str}")'
+    print(solve_cmd)
+    _copy(solve_cmd)
     return 0
 
 
