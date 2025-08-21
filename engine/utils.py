@@ -64,8 +64,9 @@ def candidate_mask_init(grids: np.ndarray) -> np.ndarray:
                 if val:
                     bit = 1 << (val - 1)
                     mask[n, r, c] = bit
+                    inv_bit = np.uint16(~bit & ALL_CANDIDATES)
                     for rr, cc in PEERS[r][c]:
-                        mask[n, rr, cc] &= ~bit
+                        mask[n, rr, cc] &= inv_bit
     return mask
 
 
@@ -74,8 +75,9 @@ def assign(grid: np.ndarray, mask: np.ndarray, r: int, c: int, d0idx: int) -> No
     bit = 1 << d0idx
     grid[r, c] = d0idx + 1
     mask[r, c] = bit
+    inv_bit = np.uint16(~bit & ALL_CANDIDATES)
     for rr, cc in PEERS[r][c]:
-        mask[rr, cc] &= ~bit
+        mask[rr, cc] &= inv_bit
 
 
 def apply_deductions(
@@ -98,8 +100,9 @@ def apply_deductions(
                 for (r, c), vals in ded["eliminations"]:
                     for val in vals:
                         bit = 1 << (val - 1)
+                        inv_bit = np.uint16(~bit & ALL_CANDIDATES)
                         if mask[n, r, c] & bit:
-                            mask[n, r, c] &= ~bit
+                            mask[n, r, c] &= inv_bit
                             changes += 1
     return changes
 
