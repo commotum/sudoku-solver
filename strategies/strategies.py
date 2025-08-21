@@ -19,7 +19,7 @@ from .fish import (
     find_jellyfish_rows,
     find_jellyfish_cols,
 )
-from .uniqueness import find_ur_type1
+from .uniqueness import find_ur_type1, find_ur_type2, find_ur_type2b
 
 STRATEGY_FUNCTIONS = {
     "naked_single": find_naked_singles,
@@ -37,6 +37,8 @@ STRATEGY_FUNCTIONS = {
     "jellyfish_row": find_jellyfish_rows,
     "jellyfish_col": find_jellyfish_cols,
     "ur_type1": find_ur_type1,
+    "ur_type2": find_ur_type2,
+    "ur_type2b": find_ur_type2b,
 }
 
 TIERS = {
@@ -56,10 +58,12 @@ TIERS = {
         "x_wing_row",
         "x_wing_col",
         "swordfish_row",
-        "swordfish_col",
+        "swordfish_col", 
         "jellyfish_row",
         "jellyfish_col",
         "ur_type1",
+        "ur_type2",
+        "ur_type2b",
     ],
     4: [],
     5: [],
