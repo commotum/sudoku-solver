@@ -131,6 +131,7 @@ Strategies are organized by action type, complexity, and scope. The solver shoul
 | Locked Candidates        | Operation on unknowns (eliminate) | Pair/Triple                             | Intersection (box↔row/col) | Pointing/Claiming eliminations.              |
 | Naked Pair/Triplet/Quad  | Operation on unknowns (eliminate) | Pair/Triple/Quad                        | Unit (row/col/box)         | Reduce other cells in unit.                  |
 | Hidden Pair/Triplet/Quad | Operation on unknowns (eliminate) | Pair/Triple/Quad                        | Unit (row/col/box)         | Inverse of naked subsets.                    |
+| Unique Rectangle Type 1 | Certainty (fill cell) | 4-cell rectangle | Grid-wide | Three cells share a pair; fourth forced. |
 | XY‑Wing                  | Operation on unknowns (eliminate) | Triple (3 cells)                        | Chain                      | Bivalue pivot with two wings.                |
 | XYZ‑Wing                 | Operation on unknowns (eliminate) | Triple (3 cells)                        | Chain                      | Trivalue pivot + two wings.                  |
 | X‑Wing                   | Operation on unknowns (eliminate) | Quad (4‑cell rectangle)                 | Grid‑wide                  | Row/col rectangle pattern.                   |
@@ -157,6 +158,9 @@ Strategies are organized by action type, complexity, and scope. The solver shoul
 
   * `x_wing_row`, `x_wing_col`
   * `swordfish_row`, `swordfish_col`
+* **Uniqueness** (`strategies/uniqueness.py`):
+
+  * `ur_type1`
 
 `utils.apply_deductions` now handles both fills and eliminations, updating candidate masks so deductions from advanced strategies propagate immediately.
 
@@ -172,6 +176,7 @@ Each puzzle’s solution is a sequence of step records:
 
   * Singles: `{ "type": "naked_single", "position": (r, c), "value": v }`
   * Eliminations: `{ "type": "locked_pointing_row", "eliminations": [ ((r, c), [values...]), ... ] }`
+  * Uniqueness: { "type": "ur_type1", "position": (r, c), "value": v }
 
 You can save these sequences for ML or analysis.
 
