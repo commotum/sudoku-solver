@@ -16,6 +16,7 @@ from .fish import (
     find_swordfish_rows,
     find_swordfish_cols,
 )
+from .uniqueness import find_ur_type1
 from engine.utils import compute_candidates
 # Dictionary mapping strategy names to functions
 STRATEGY_FUNCTIONS = {
@@ -31,6 +32,7 @@ STRATEGY_FUNCTIONS = {
     'x_wing_col': find_x_wing_cols,
     'swordfish_row': find_swordfish_rows,
     'swordfish_col': find_swordfish_cols,
+    'ur_type1': find_ur_type1,
 }
 
 # Strategy tiers from easiest to hardest. Each tier is a pre-expanded list of
@@ -53,6 +55,7 @@ TIERS = {
         'x_wing_col',
         'swordfish_row',
         'swordfish_col',
+        'ur_type1',
     ],
     # Placeholders for future strategy categories
     4: [],  # wings
