@@ -148,3 +148,185 @@ def find_ur_type2b(mask: np.ndarray, out: list[list[dict]]) -> None:
             if elims:
                 out[n].append({"type": "ur_type2b", "eliminations": list(elims.items())})
 
+
+def find_ur_type3(mask: np.ndarray, out: list[list[dict]]) -> None:
+    """UR Type 3: different extras on the floor plus a {c,d} bivalue in the same house."""
+    N = mask.shape[0]
+    for n in range(N):
+        m = mask[n]
+        for r1 in range(8):
+            for r2 in range(r1 + 1, 9):
+                for c1 in range(8):
+                    for c2 in range(c1 + 1, 9):
+                        x11, x12, x21, x22 = (
+                            m[r1, c1],
+                            m[r1, c2],
+                            m[r2, c1],
+                            m[r2, c2],
+                        )
+
+                        # Horizontal floor at row r2
+                        roof = [x11, x12]
+                        floor = [x21, x22]
+                        rd0, rd1 = np.where(roof[0])[0], np.where(roof[1])[0]
+                        if rd0.size == 2 and np.array_equal(rd0, rd1):
+                            a, b = rd0
+                            fd0, fd1 = np.where(floor[0])[0], np.where(floor[1])[0]
+                            if {a, b}.issubset(fd0) and {a, b}.issubset(fd1):
+                                extras0 = set(fd0) - {a, b}
+                                extras1 = set(fd1) - {a, b}
+                                for c in extras0 - extras1:
+                                    for d in extras1 - extras0:
+                                        if c == d:
+                                            continue
+                                        y_cell = None
+                                        for c3 in range(9):
+                                            if c3 in (c1, c2):
+                                                continue
+                                            s = np.where(m[r2, c3])[0]
+                                            if len(s) == 2 and set(s) == {c, d}:
+                                                y_cell = (r2, c3)
+                                                break
+                                        if y_cell is None:
+                                            continue
+                                        elims: dict[tuple[int, int], list[int]] = {}
+                                        for c4 in range(9):
+                                            if c4 in (c1, c2, y_cell[1]):
+                                                continue
+                                            vals: list[int] = []
+                                            if m[r2, c4, c]:
+                                                vals.append(int(c + 1))
+                                            if m[r2, c4, d]:
+                                                vals.append(int(d + 1))
+                                            if vals:
+                                                elims[(r2, c4)] = vals
+                                        if elims:
+                                            out[n].append(
+                                                {
+                                                    "type": "ur_type3",
+                                                    "eliminations": list(elims.items()),
+                                                }
+                                            )
+
+                        # Vertical floor at column c2
+                        roof = [x11, x21]
+                        floor = [x12, x22]
+                        rd0, rd1 = np.where(roof[0])[0], np.where(roof[1])[0]
+                        if rd0.size == 2 and np.array_equal(rd0, rd1):
+                            a, b = rd0
+                            fd0, fd1 = np.where(floor[0])[0], np.where(floor[1])[0]
+                            if {a, b}.issubset(fd0) and {a, b}.issubset(fd1):
+                                extras0 = set(fd0) - {a, b}
+                                extras1 = set(fd1) - {a, b}
+                                for c in extras0 - extras1:
+                                    for d in extras1 - extras0:
+                                        if c == d:
+                                            continue
+                                        y_cell = None
+                                        for r3 in range(9):
+                                            if r3 in (r1, r2):
+                                                continue
+                                            s = np.where(m[r3, c2])[0]
+                                            if len(s) == 2 and set(s) == {c, d}:
+                                                y_cell = (r3, c2)
+                                                break
+                                        if y_cell is None:
+                                            continue
+                                        elims: dict[tuple[int, int], list[int]] = {}
+                                        for r4 in range(9):
+                                            if r4 in (r1, r2, y_cell[0]):
+                                                continue
+                                            vals: list[int] = []
+                                            if m[r4, c2, c]:
+                                                vals.append(int(c + 1))
+                                            if m[r4, c2, d]:
+                                                vals.append(int(d + 1))
+                                            if vals:
+                                                elims[(r4, c2)] = vals
+                                        if elims:
+                                            out[n].append(
+                                                {
+                                                    "type": "ur_type3",
+                                                    "eliminations": list(elims.items()),
+                                                }
+                                            )
+
+
+def find_ur_type4(mask: np.ndarray, out: list[list[dict]]) -> None:
+    """UR Type 4: block-locked UR digit across the floor pair."""
+    N = mask.shape[0]
+    for n in range(N):
+        m = mask[n]
+        for r1 in range(8):
+            for r2 in range(r1 + 1, 9):
+                for c1 in range(8):
+                    for c2 in range(c1 + 1, 9):
+                        x11, x12, x21, x22 = (
+                            m[r1, c1],
+                            m[r1, c2],
+                            m[r2, c1],
+                            m[r2, c2],
+                        )
+
+                        # Horizontal floor at row r2
+                        if c1 // 3 == c2 // 3:  # floor cells within same block
+                            roof = [x11, x12]
+                            floor = [x21, x22]
+                            rd0, rd1 = np.where(roof[0])[0], np.where(roof[1])[0]
+                            if rd0.size == 2 and np.array_equal(rd0, rd1):
+                                a, b = rd0
+                                fd0, fd1 = np.where(floor[0])[0], np.where(floor[1])[0]
+                                if {a, b}.issubset(fd0) and {a, b}.issubset(fd1):
+                                    block = (r2 // 3) * 3 + (c1 // 3)
+                                    for d in (a, b):
+                                        cells_d = [
+                                            (rr, cc)
+                                            for rr, cc in BLOCKS[block]
+                                            if m[rr, cc, d]
+                                        ]
+                                        if set(cells_d) == {(r2, c1), (r2, c2)}:
+                                            d_other = b if d == a else a
+                                            elims: dict[tuple[int, int], list[int]] = {}
+                                            for r, c in [(r2, c1), (r2, c2)]:
+                                                if m[r, c, d_other]:
+                                                    elims[(r, c)] = [int(d_other + 1)]
+                                            if elims:
+                                                out[n].append(
+                                                    {
+                                                        "type": "ur_type4",
+                                                        "eliminations": list(elims.items()),
+                                                    }
+                                                )
+                                            break
+
+                        # Vertical floor at column c2
+                        if r1 // 3 == r2 // 3:  # floor cells within same block
+                            roof = [x11, x21]
+                            floor = [x12, x22]
+                            rd0, rd1 = np.where(roof[0])[0], np.where(roof[1])[0]
+                            if rd0.size == 2 and np.array_equal(rd0, rd1):
+                                a, b = rd0
+                                fd0, fd1 = np.where(floor[0])[0], np.where(floor[1])[0]
+                                if {a, b}.issubset(fd0) and {a, b}.issubset(fd1):
+                                    block = (r1 // 3) * 3 + (c2 // 3)
+                                    for d in (a, b):
+                                        cells_d = [
+                                            (rr, cc)
+                                            for rr, cc in BLOCKS[block]
+                                            if m[rr, cc, d]
+                                        ]
+                                        if set(cells_d) == {(r1, c2), (r2, c2)}:
+                                            d_other = b if d == a else a
+                                            elims: dict[tuple[int, int], list[int]] = {}
+                                            for r, c in [(r1, c2), (r2, c2)]:
+                                                if m[r, c, d_other]:
+                                                    elims[(r, c)] = [int(d_other + 1)]
+                                            if elims:
+                                                out[n].append(
+                                                    {
+                                                        "type": "ur_type4",
+                                                        "eliminations": list(elims.items()),
+                                                    }
+                                                )
+                                            break
+
