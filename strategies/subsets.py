@@ -1,7 +1,7 @@
 from itertools import combinations
 import numpy as np
 
-from utils import HOUSES, digits_from_mask, ALL_CANDIDATES
+from engine.utils import HOUSES, digits_from_mask, ALL_CANDIDATES
 
 
 def _naked_subset_in_house(mask, H, out, n_idx):

@@ -1,5 +1,3 @@
-# Helpers: Grid validation, apply_deduction, candidate computation
-
 from pathlib import Path
 import os
 import re
@@ -8,74 +6,115 @@ import random
 import numpy as np
 
 
-def compute_candidates(grids: np.ndarray) -> np.ndarray:
-    """Compute candidate masks for a batch of grids.
+ALL_CANDIDATES = (1 << 9) - 1  # 0b1_1111_1111
 
-    Args:
-        grids: np.ndarray of shape (N, 9, 9) with values 0-9.
+# Precompute houses
+ROWS = [[(r, c) for c in range(9)] for r in range(9)]
+COLS = [[(r, c) for r in range(9)] for c in range(9)]
+BLOCKS = [
+    [
+        (r, c)
+        for r in range(br * 3, br * 3 + 3)
+        for c in range(bc * 3, bc * 3 + 3)
+    ]
+    for br in range(3)
+    for bc in range(3)
+]
+HOUSES = ROWS + COLS + BLOCKS
 
-    Returns:
-        np.ndarray of shape (N, 9, 9, 9) where the last dimension is a
-        boolean mask for candidate values 1-9.
-    """
-    if grids.shape[1:] != (9, 9):
-        raise ValueError("Grids must be (N, 9, 9)")
+# Peers for assignments
+PEERS = [[set() for _ in range(9)] for _ in range(9)]
+for r in range(9):
+    for c in range(9):
+        peers = set(ROWS[r] + COLS[c] + BLOCKS[(r // 3) * 3 + (c // 3)])
+        peers.remove((r, c))
+        PEERS[r][c] = peers
 
+# Popcount lookup for 9-bit masks
+POPCOUNT = np.array([bin(i).count("1") for i in range(1 << 9)], dtype=np.uint8)
+
+
+def popcount16(mask: np.ndarray) -> np.ndarray:
+    """Vectorized population count for uint16 mask arrays."""
+    return POPCOUNT[mask]
+
+
+def digits_from_mask(mask_rc: int) -> list[int]:
+    """Return list of 1-based digits present in mask value."""
+    return [d + 1 for d in range(9) if mask_rc & (1 << d)]
+
+
+def Pos(mask: np.ndarray, H: list[tuple[int, int]], n: int) -> list[tuple[int, int]]:
+    """Positions of digit ``n`` within house ``H`` for a single grid mask."""
+    bit = 1 << (n - 1)
+    return [(r, c) for r, c in H if mask[r, c] & bit]
+
+
+def candidate_mask_init(grids: np.ndarray) -> np.ndarray:
+    """Compute uint16 candidate masks for a batch of grids."""
+    if grids.ndim == 2:
+        grids = grids[None, ...]
     N = grids.shape[0]
+    mask = np.full((N, 9, 9), ALL_CANDIDATES, dtype=np.uint16)
+    for n in range(N):
+        grid = grids[n]
+        for r in range(9):
+            for c in range(9):
+                val = int(grid[r, c])
+                if val:
+                    bit = 1 << (val - 1)
+                    mask[n, r, c] = bit
+                    for rr, cc in PEERS[r][c]:
+                        mask[n, rr, cc] &= ~bit
+    return mask
 
-    row_forbidden = np.stack(
-        [np.any(grids == k, axis=2) for k in range(1, 10)], axis=-1
-    )  # (N, 9, 9 nums)
-    col_forbidden = np.stack(
-        [np.any(grids == k, axis=1) for k in range(1, 10)], axis=-1
-    )  # (N, 9, 9 nums)
 
-    box_forbidden = np.zeros((N, 9, 9), dtype=bool)
-    for br in range(3):
-        for bc in range(3):
-            subgrid = grids[:, br * 3 : (br + 1) * 3, bc * 3 : (bc + 1) * 3]
-            box_idx = br * 3 + bc
-            for k in range(1, 10):
-                box_forbidden[:, box_idx, k - 1] = np.any(subgrid == k, axis=(1, 2))
+def assign(grid: np.ndarray, mask: np.ndarray, r: int, c: int, d0idx: int) -> None:
+    """Assign digit index ``d0idx`` (0-based) to cell ``(r, c)`` updating peers."""
+    bit = 1 << d0idx
+    grid[r, c] = d0idx + 1
+    mask[r, c] = bit
+    for rr, cc in PEERS[r][c]:
+        mask[rr, cc] &= ~bit
 
-    empty = grids == 0
-    candidates = np.tile(empty[:, :, :, None], (1, 1, 1, 9))
-    candidates &= ~row_forbidden[:, :, None, :]
-    candidates &= ~col_forbidden[:, None, :, :]
 
-    row_to_box = np.floor_divide(np.arange(9), 3)
-    box_idx = row_to_box[:, None] * 3 + row_to_box[None, :]
-    box_forbidden_per_cell = box_forbidden[:, box_idx, :]
-    candidates &= ~box_forbidden_per_cell
-
-    return candidates
+def apply_deductions(
+    grids: np.ndarray, mask: np.ndarray, all_deductions: list[list[dict]]
+) -> int:
+    """Apply recorded deductions to grids and masks in-place."""
+    if grids.ndim == 2:
+        grids = grids[None, ...]
+        mask = mask[None, ...]
+    changes = 0
+    for n, deds in enumerate(all_deductions):
+        for ded in deds:
+            if "value" in ded and "position" in ded:
+                r, c = ded["position"]
+                d = ded["value"] - 1
+                if grids[n, r, c] == 0:
+                    assign(grids[n], mask[n], r, c, d)
+                    changes += 1
+            if "eliminations" in ded:
+                for (r, c), vals in ded["eliminations"]:
+                    for val in vals:
+                        bit = 1 << (val - 1)
+                        if mask[n, r, c] & bit:
+                            mask[n, r, c] &= ~bit
+                            changes += 1
+    return changes
 
 
 def is_solved(grids: np.ndarray) -> np.ndarray:
-    """
-    Checks if each puzzle in the batch is fully solved (all cells filled with 1-9, no zeros).
-    
-    Args:
-        grids: np.ndarray of shape (N, 9, 9).
-    
-    Returns:
-        np.ndarray of shape (N,) with bools: True if solved.
-    """
-    return np.all(grids != 0, axis=(1, 2))
+    """Check whether each puzzle in the batch is completely filled."""
+    arr = grids if grids.ndim == 3 else grids[None, ...]
+    return np.all(arr != 0, axis=(1, 2))
+
 
 def is_valid(grids: np.ndarray) -> np.ndarray:
-    """
-    Validates each puzzle in the batch: No duplicates in rows, columns, or boxes (ignoring zeros).
-    
-    Args:
-        grids: np.ndarray of shape (N, 9, 9).
-    
-    Returns:
-        np.ndarray of shape (N,) with bools: True if valid (no conflicts).
-    """
+    """Validate each puzzle: no duplicates in rows, columns or boxes (ignoring zeros)."""
     N = grids.shape[0]
     valid = np.ones(N, dtype=bool)
-    
+
     # Check rows
     for i in range(9):
         row_vals = grids[:, i, :]
@@ -85,7 +124,7 @@ def is_valid(grids: np.ndarray) -> np.ndarray:
             non_zero = row_vals[n][row_vals[n] != 0]
             if len(non_zero) != len(np.unique(non_zero)):
                 valid[n] = False
-    
+
     # Check columns
     for j in range(9):
         col_vals = grids[:, :, j]
@@ -95,7 +134,7 @@ def is_valid(grids: np.ndarray) -> np.ndarray:
             non_zero = col_vals[n][col_vals[n] != 0]
             if len(non_zero) != len(np.unique(non_zero)):
                 valid[n] = False
-    
+
     # Check boxes
     for br in range(3):
         for bc in range(3):
@@ -107,52 +146,8 @@ def is_valid(grids: np.ndarray) -> np.ndarray:
                 non_zero = flat[flat != 0]
                 if len(non_zero) != len(np.unique(non_zero)):
                     valid[n] = False
-    
+
     return valid
-
-def apply_deductions(
-    grids: np.ndarray, candidates: np.ndarray, all_deductions: list[list[dict]]
-) -> int:
-    """Apply fills and eliminations to grids and candidates in-place.
-
-    Args:
-        grids: np.ndarray of shape (N, 9, 9) to modify.
-        candidates: np.ndarray of shape (N, 9, 9, 9) to modify.
-        all_deductions: List of deductions per puzzle.
-
-    Returns:
-        Total number of changes (fills + eliminations) applied.
-    """
-
-    N = grids.shape[0]
-    applied_count = 0
-
-    for n in range(N):
-        for ded in all_deductions[n]:
-            if 'value' in ded and 'position' in ded:
-                i, j = ded['position']
-                val = ded['value']
-                if grids[n, i, j] == 0:
-                    grids[n, i, j] = val
-                    applied_count += 1
-                    candidates[n, i, j, :] = False
-                    candidates[n, i, :, val - 1] = False
-                    candidates[n, :, j, val - 1] = False
-                    br, bc = i // 3, j // 3
-                    candidates[
-                        n,
-                        br * 3 : (br + 1) * 3,
-                        bc * 3 : (bc + 1) * 3,
-                        val - 1,
-                    ] = False
-            if 'eliminations' in ded:
-                for (i, j), vals in ded['eliminations']:
-                    for val in vals:
-                        if candidates[n, i, j, val - 1]:
-                            candidates[n, i, j, val - 1] = False
-                            applied_count += 1
-
-    return applied_count
 
 
 def repo_root() -> Path:
@@ -192,3 +187,4 @@ def random_level() -> int:
     if not levels:
         raise RuntimeError("No levels available in data directory")
     return random.choice(levels)
+

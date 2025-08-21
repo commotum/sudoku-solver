@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils import digits_from_mask
+from engine.utils import digits_from_mask
 
 
 def find_ur_type1(mask: np.ndarray, out: list[list[dict]]) -> None:
