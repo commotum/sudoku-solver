@@ -1,83 +1,68 @@
-# SPDX-License-Identifier: MIT
-"""Fish strategies: X-Wing and Swordfish."""
-
-import numpy as np
 from itertools import combinations
+import numpy as np
 
 
-def _find_fish(candidates: np.ndarray, all_deductions: list[list[dict]], size: int, orientation: str):
-    N = candidates.shape[0]
+def _fish(mask: np.ndarray, size: int, orient: str, name: str, out: list[list[dict]]):
+    N = mask.shape[0]
     for n in range(N):
-        cand = candidates[n]
-        for k in range(9):
-            if orientation == 'row':
-                positions = [np.where(cand[r, :, k])[0] for r in range(9)]
-                base_indices = [r for r in range(9) if 2 <= len(positions[r]) <= size]
-                for rows in combinations(base_indices, size):
-                    union_cols = set().union(*(set(positions[r]) for r in rows))
-                    if len(union_cols) != size:
+        m = mask[n]
+        for digit in range(1, 10):
+            bit = 1 << (digit - 1)
+            if orient == "row":
+                sets = [
+                    {c for c in range(9) if m[r, c] & bit}
+                    for r in range(9)
+                ]
+                for rows in combinations(range(9), size):
+                    cols_union = set().union(*(sets[r] for r in rows))
+                    if len(cols_union) != size:
                         continue
-                    base_positions = []
-                    for r in rows:
-                        for c in positions[r]:
-                            base_positions.append((r, c))
-                    eliminations = []
-                    for c in sorted(union_cols):
-                        for r in range(9):
-                            if r in rows:
-                                continue
-                            if cand[r, c, k]:
-                                eliminations.append(((r, c), [k + 1]))
-                    if eliminations:
-                        all_deductions[n].append({
-                            'type': f'{"x_wing" if size == 2 else "swordfish"}_row',
-                            'base_rows': list(rows),
-                            'cover_cols': sorted(union_cols),
-                            'candidate': k + 1,
-                            'positions': base_positions,
-                            'eliminations': eliminations,
-                        })
-            else:  # orientation == 'col'
-                positions = [np.where(cand[:, c, k])[0] for c in range(9)]
-                base_indices = [c for c in range(9) if 2 <= len(positions[c]) <= size]
-                for cols in combinations(base_indices, size):
-                    union_rows = set().union(*(set(positions[c]) for c in cols))
-                    if len(union_rows) != size:
+                    if any(not sets[r] or not sets[r].issubset(cols_union) for r in rows):
                         continue
-                    base_positions = []
-                    for c in cols:
-                        for r in positions[c]:
-                            base_positions.append((r, c))
-                    eliminations = []
-                    for r in sorted(union_rows):
-                        for c in range(9):
-                            if c in cols:
-                                continue
-                            if cand[r, c, k]:
-                                eliminations.append(((r, c), [k + 1]))
-                    if eliminations:
-                        all_deductions[n].append({
-                            'type': f'{"x_wing" if size == 2 else "swordfish"}_col',
-                            'base_cols': list(cols),
-                            'cover_rows': sorted(union_rows),
-                            'candidate': k + 1,
-                            'positions': base_positions,
-                            'eliminations': eliminations,
-                        })
+                    elims: dict[tuple[int, int], list[int]] = {}
+                    for rr in range(9):
+                        if rr in rows:
+                            continue
+                        for c in cols_union:
+                            if m[rr, c] & bit:
+                                elims.setdefault((rr, c), []).append(digit)
+                    if elims:
+                        out[n].append({"type": f"{name}_row", "base": rows, "eliminations": list(elims.items())})
+            else:
+                sets = [
+                    {r for r in range(9) if m[r, c] & bit}
+                    for c in range(9)
+                ]
+                for cols in combinations(range(9), size):
+                    rows_union = set().union(*(sets[c] for c in cols))
+                    if len(rows_union) != size:
+                        continue
+                    if any(not sets[c] or not sets[c].issubset(rows_union) for c in cols):
+                        continue
+                    elims: dict[tuple[int, int], list[int]] = {}
+                    for cc in range(9):
+                        if cc in cols:
+                            continue
+                        for r in rows_union:
+                            if m[r, cc] & bit:
+                                elims.setdefault((r, cc), []).append(digit)
+                    if elims:
+                        out[n].append({"type": f"{name}_col", "base": cols, "eliminations": list(elims.items())})
 
+def find_x_wing_rows(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 2, "row", "x_wing", out)
 
-def find_x_wing_rows(candidates: np.ndarray, all_deductions: list[list[dict]]):
-    _find_fish(candidates, all_deductions, size=2, orientation='row')
+def find_x_wing_cols(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 2, "col", "x_wing", out)
 
+def find_swordfish_rows(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 3, "row", "swordfish", out)
 
-def find_x_wing_cols(candidates: np.ndarray, all_deductions: list[list[dict]]):
-    _find_fish(candidates, all_deductions, size=2, orientation='col')
+def find_swordfish_cols(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 3, "col", "swordfish", out)
 
+def find_jellyfish_rows(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 4, "row", "jellyfish", out)
 
-def find_swordfish_rows(candidates: np.ndarray, all_deductions: list[list[dict]]):
-    _find_fish(candidates, all_deductions, size=3, orientation='row')
-
-
-def find_swordfish_cols(candidates: np.ndarray, all_deductions: list[list[dict]]):
-    _find_fish(candidates, all_deductions, size=3, orientation='col')
-
+def find_jellyfish_cols(mask: np.ndarray, out: list[list[dict]]) -> None:
+    _fish(mask, 4, "col", "jellyfish", out)
