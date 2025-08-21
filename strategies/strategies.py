@@ -67,7 +67,7 @@ TIERS = {
 
 def find_deductions_batch(mask: np.ndarray, strategies: list[str]) -> list[list[dict]]:
     """Run selected strategies on mask batch."""
-    if mask.ndim == 2:
+    if mask.ndim == 3:
         mask = mask[None, ...]
     N = mask.shape[0]
     all_deductions = [[] for _ in range(N)]
