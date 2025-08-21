@@ -166,6 +166,8 @@ Strategies are organized by action type, complexity, and scope. The solver shoul
 * **Uniqueness** (`strategies/uniqueness.py`):
 
   * `ur_type1`
+  * `ur_type2`
+  * `ur_type2b`
 
 `utils.apply_deductions` now handles both fills and eliminations, updating candidate masks so deductions from advanced strategies propagate immediately.
 
@@ -182,6 +184,8 @@ Each puzzle’s solution is a sequence of step records:
   * Singles: `{ "type": "naked_single", "position": (r, c), "value": v }`
   * Eliminations: `{ "type": "locked_pointing", "eliminations": [ ((r, c), [values...]), ... ] }`
   * Uniqueness: { "type": "ur_type1", "position": (r, c), "value": v }
+  * Uniqueness: { "type": "ur_type2", "eliminations": [ ((r, c), [values...]), ... ] }
+  * Uniqueness: { "type": "ur_type2b", "eliminations": [ ((r, c), [values...]), ... ] }
 
 You can save these sequences for ML or analysis.
 
