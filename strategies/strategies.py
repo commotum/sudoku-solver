@@ -1,81 +1,99 @@
 import numpy as np
 
+# --- imports (deduped; keep optional ones commented until implemented) ---
 from .singles import (
     find_naked_singles,
     find_hidden_singles_rows,
     find_hidden_singles_cols,
     find_hidden_singles_boxes,
 )
-from .subsets import find_naked_subsets, find_hidden_subsets
+
 from .intersections import (
     find_locked_candidates_pointing,
     find_locked_candidates_claiming,
 )
+
+from .subsets import find_naked_subsets, find_hidden_subsets
+
 from .fish import (
-    find_x_wing_rows,
-    find_x_wing_cols,
-    find_swordfish_rows,
-    find_swordfish_cols,
-    find_jellyfish_rows,
-    find_jellyfish_cols,
-)
-from .uniqueness import (
-    find_ur_type1,
-    find_ur_type2,
-    find_ur_type2b,
-    find_ur_type3,
-    find_ur_type4,
+    find_x_wing_rows, find_x_wing_cols,
+    find_swordfish_rows, find_swordfish_cols,
+    find_jellyfish_rows, find_jellyfish_cols,
 )
 
+from .uniqueness import (
+    find_ur_type1, find_ur_type2, find_ur_type2b,
+    find_ur_type3, find_ur_type4,
+)
+# Optional (enable if you have them)
+# from .bug import find_bug
+# from .wings import find_xy_wing, find_xyz_wing, find_w_wing
+
+
 STRATEGY_FUNCTIONS = {
+    # Singles
     "naked_single": find_naked_singles,
     "hidden_single_row": find_hidden_singles_rows,
     "hidden_single_col": find_hidden_singles_cols,
     "hidden_single_box": find_hidden_singles_boxes,
-    "naked_subsets": find_naked_subsets,
-    "hidden_subsets": find_hidden_subsets,
+
+    # Intersections & Subsets
     "locked_pointing": find_locked_candidates_pointing,
     "locked_claiming": find_locked_candidates_claiming,
+    "naked_subsets": find_naked_subsets,
+    "hidden_subsets": find_hidden_subsets,
+
+    # Uniqueness
+    "ur_type1": find_ur_type1,
+    "ur_type2": find_ur_type2,
+    "ur_type2b": find_ur_type2b,
+    "ur_type3": find_ur_type3,
+    "ur_type4": find_ur_type4,
+    # "bug": find_bug,
+
+    # Advanced (fish / wings / other)
     "x_wing_row": find_x_wing_rows,
     "x_wing_col": find_x_wing_cols,
     "swordfish_row": find_swordfish_rows,
     "swordfish_col": find_swordfish_cols,
     "jellyfish_row": find_jellyfish_rows,
     "jellyfish_col": find_jellyfish_cols,
-    "ur_type1": find_ur_type1,
-    "ur_type2": find_ur_type2,
-    "ur_type2b": find_ur_type2b,
-    "ur_type3": find_ur_type3,
-    "ur_type4": find_ur_type4,
+    # "xy_wing": find_xy_wing,
+    # "xyz_wing": find_xyz_wing,
+    # "w_wing": find_w_wing,
 }
 
 TIERS = {
+    # Tier 1 — Singles (cheapest; always first)
     1: [
         "naked_single",
-        "hidden_single_row",
-        "hidden_single_col",
-        "hidden_single_box",
+        "hidden_single_row", "hidden_single_col", "hidden_single_box",
     ],
+
+    # Tier 2 — Core Subsets (intersections then subsets)
+    # Run locking first to simplify candidate sets for subsets.
     2: [
-        "naked_subsets",
-        "hidden_subsets",
-        "locked_pointing",
-        "locked_claiming",
+        "locked_pointing", "locked_claiming",
+        "naked_subsets", "hidden_subsets",
     ],
+
+    # Tier 3 — Uniqueness & BUG (safety nets; early–mid)
+    # Light UR before heavy/advanced; BUG first if you have it.
     3: [
-        "x_wing_row",
-        "x_wing_col",
-        "swordfish_row",
-        "swordfish_col", 
-        "jellyfish_row",
-        "jellyfish_col",
-        "ur_type1",
-        "ur_type2",
-        "ur_type2b",
-        "ur_type3",
-        "ur_type4",
+        # "bug",
+        "ur_type1", "ur_type2", "ur_type2b",
     ],
-    4: [],
+
+    # Tier 4 — Advanced (fish/wings/other)
+    # Escalate by size: X-Wing → Swordfish → Jellyfish; then heavy UR.
+    4: [
+        "x_wing_row", "x_wing_col",
+        "swordfish_row", "swordfish_col",
+        "jellyfish_row", "jellyfish_col",
+        # "xy_wing", "xyz_wing", "w_wing",
+        "ur_type3", "ur_type4",
+    ],
+
     5: [],
 }
 
