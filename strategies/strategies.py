@@ -22,11 +22,12 @@ from .fish import (
 )
 
 from .uniqueness import (
+    find_bug,
     find_ur_type1, find_ur_type2, find_ur_type2b,
     find_ur_type3, find_ur_type4,
 )
 # Optional (enable if you have them)
-# from .bug import find_bug
+# from .wings import find_xy_wing, find_xyz_wing, find_w_wing
 # from .wings import find_xy_wing, find_xyz_wing, find_w_wing
 
 
@@ -44,12 +45,12 @@ STRATEGY_FUNCTIONS = {
     "hidden_subsets": find_hidden_subsets,
 
     # Uniqueness
+    "bug": find_bug,
     "ur_type1": find_ur_type1,
     "ur_type2": find_ur_type2,
     "ur_type2b": find_ur_type2b,
     "ur_type3": find_ur_type3,
     "ur_type4": find_ur_type4,
-    # "bug": find_bug,
 
     # Advanced (fish / wings / other)
     "x_wing_row": find_x_wing_rows,
@@ -80,7 +81,7 @@ TIERS = {
     # Tier 3 — Uniqueness & BUG (safety nets; early–mid)
     # Light UR before heavy/advanced; BUG first if you have it.
     3: [
-        # "bug",
+        "bug",
         "ur_type1", "ur_type2", "ur_type2b",
     ],
 

@@ -5,6 +5,74 @@ import numpy as np
 from engine.utils import BLOCKS
 
 
+def find_bug(mask: np.ndarray, out: list[list[dict]]) -> None:
+    """BUG+1 strategy (Bi-value Universal Grave).
+
+    Detects the BUG+1 pattern where all unsolved cells are bivalue except a
+    single cell with three candidates, and house-digit parity holds. The lone
+    cell is solved by the digit that has no partner in any of its three houses.
+    """
+    N = mask.shape[0]
+    pcs = mask.sum(axis=3)
+    for n in range(N):
+        pc = pcs[n]
+        m = mask[n]
+        cells3 = np.argwhere(pc == 3)
+        if cells3.shape[0] != 1:
+            continue
+        # all other unsolved cells must be bivalue
+        if np.any((pc > 1) & (pc != 2) & (pc != 3)):
+            continue
+
+        # parity checks for each house and digit
+        parity_ok = True
+        for d in range(9):
+            for r in range(9):
+                row = m[r, :, d]
+                placed = np.any((pc[r] == 1) & row)
+                if not placed and row.sum() != 2:
+                    parity_ok = False
+                    break
+            if not parity_ok:
+                break
+            for c in range(9):
+                col = m[:, c, d]
+                placed = np.any((pc[:, c] == 1) & col)
+                if not placed and col.sum() != 2:
+                    parity_ok = False
+                    break
+            if not parity_ok:
+                break
+            for cells in BLOCKS:
+                arr = np.array([m[r, c, d] for r, c in cells])
+                placed = np.any([pc[r, c] == 1 and m[r, c, d] for r, c in cells])
+                if not placed and arr.sum() != 2:
+                    parity_ok = False
+                    break
+            if not parity_ok:
+                break
+        if not parity_ok:
+            continue
+
+        r, c = map(int, cells3[0])
+        digits = np.where(m[r, c])[0]
+        good: list[int] = []
+        blk = (r // 3) * 3 + (c // 3)
+        for d in digits:
+            if (
+                m[r, :, d].sum() == 1
+                and m[:, c, d].sum() == 1
+                and sum(m[rr, cc, d] for rr, cc in BLOCKS[blk]) == 1
+            ):
+                good.append(int(d))
+        if len(good) == 1:
+            out[n].append({
+                "type": "bug",
+                "position": (r, c),
+                "value": int(good[0] + 1),
+            })
+
+
 def find_ur_type1(mask: np.ndarray, out: list[list[dict]]) -> None:
     N = mask.shape[0]
     for n in range(N):
