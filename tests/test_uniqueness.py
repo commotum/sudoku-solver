@@ -4,6 +4,8 @@ from strategies.uniqueness import (
     find_ur_type1,
     find_ur_type2,
     find_ur_type2b,
+    find_ur_type3,
+    find_ur_type4,
 )
 
 
@@ -71,5 +73,49 @@ def test_ur_type2b_positive():
     find_ur_type2b(mask, out)
     assert out[0] == [
         {"type": "ur_type2b", "eliminations": [((0, 2), [3])]},
+    ]
+
+
+def test_ur_type3_positive():
+    mask = np.zeros((1, 9, 9, 9), dtype=bool)
+    # Roof cells with digits 1 and 2
+    for r, c in [(0, 0), (0, 1)]:
+        mask[0, r, c, 0] = True
+        mask[0, r, c, 1] = True
+    # Floor cells with digits 1,2 and different extras 3 and 4
+    mask[0, 1, 0, 0] = True
+    mask[0, 1, 0, 1] = True
+    mask[0, 1, 0, 2] = True  # extra 3
+    mask[0, 1, 1, 0] = True
+    mask[0, 1, 1, 1] = True
+    mask[0, 1, 1, 3] = True  # extra 4
+    # Bivalue {3,4} in same row
+    mask[0, 1, 2, 2] = True
+    mask[0, 1, 2, 3] = True
+    # Another cell in the row containing 3 and 4 to be eliminated
+    mask[0, 1, 3, 2] = True
+    mask[0, 1, 3, 3] = True
+    out = [[]]
+    find_ur_type3(mask, out)
+    assert out[0] == [
+        {"type": "ur_type3", "eliminations": [((1, 3), [3, 4])]},
+    ]
+
+
+def test_ur_type4_positive():
+    mask = np.zeros((1, 9, 9, 9), dtype=bool)
+    # Roof cells with digits 1 and 2
+    for r, c in [(0, 0), (0, 1)]:
+        mask[0, r, c, 0] = True
+        mask[0, r, c, 1] = True
+    # Floor cells in same block (rows 3, cols 0-1) containing digits 1 and 2
+    for c in [0, 1]:
+        mask[0, 3, c, 0] = True
+        mask[0, 3, c, 1] = True
+    # Digit 1 appears only in the floor cells within the block
+    out = [[]]
+    find_ur_type4(mask, out)
+    assert out[0] == [
+        {"type": "ur_type4", "eliminations": [((3, 0), [2]), ((3, 1), [2])]},
     ]
 
