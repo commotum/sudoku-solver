@@ -5,17 +5,18 @@ from strategies.singles import (
     find_hidden_singles_rows,
 )
 
-FULL = (1 << 9) - 1
 
 def test_naked_and_hidden_singles():
-    mask = np.full((1, 9, 9), FULL, dtype=np.uint16)
+    mask = np.ones((1, 9, 9, 9), dtype=bool)
     # Naked single at (0,0) digit 5
-    mask[0, 0, 0] = 1 << 4
+    mask[0, 0, 0, :] = False
+    mask[0, 0, 0, 4] = True
     # Hidden single for digit 2 in row 0 at (0,1)
-    mask[0, 0, 1] = (1 << 1) | (1 << 2)
+    mask[0, 0, 1, :] = False
+    mask[0, 0, 1, [1, 2]] = True
     for c in range(9):
         if c != 1:
-            mask[0, 0, c] &= np.uint16(FULL & ~(1 << 1))
+            mask[0, 0, c, 1] = False
     out = [[]]
     find_naked_singles(mask, out)
     assert out[0] == [{"type": "naked_single", "position": (0, 0), "value": 5}]

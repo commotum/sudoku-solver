@@ -1,57 +1,62 @@
+"""Subset strategies (pairs, triples, quads) using boolean candidates."""
+
 from itertools import combinations
 import numpy as np
 
-from engine.utils import HOUSES, digits_from_mask, ALL_CANDIDATES
+from engine.utils import HOUSES
 
 
-def _naked_subset_in_house(mask, H, out, n_idx):
-    values = [mask[r, c] for r, c in H]
+def _naked_subset_in_house(mask: np.ndarray, H, out, n_idx):
+    cells = np.array([mask[r, c] for r, c in H])
     for k in range(2, 5):
         for combo in combinations(range(9), k):
-            union = 0
-            valid = True
-            for idx in combo:
-                m = values[idx]
-                pc = m.bit_count()
-                if pc < 2 or pc > k:
-                    valid = False
-                    break
-                union |= m
-            if not valid or union.bit_count() != k:
+            subset = cells[list(combo)]
+            counts = subset.sum(axis=1)
+            if np.any((counts < 2) | (counts > k)):
                 continue
-            elims = {}
-            for idx2 in range(9):
-                if idx2 in combo:
+            union = subset.any(axis=0)
+            if union.sum() != k:
+                continue
+            elims: dict[tuple[int, int], list[int]] = {}
+            for idx in range(9):
+                if idx in combo:
                     continue
-                m2 = values[idx2]
-                if m2 & union:
-                    r, c = H[idx2]
-                    for d in digits_from_mask(m2 & union):
-                        elims.setdefault((r, c), []).append(d)
+                overlap = cells[idx] & union
+                digits = np.where(overlap)[0] + 1
+                if digits.size:
+                    r, c = H[idx]
+                    elims.setdefault((r, c), []).extend(digits.tolist())
             if elims:
                 t = {2: "naked_pair", 3: "naked_triple", 4: "naked_quad"}[k]
-                out[n_idx].append({"type": t, "cells": [H[i] for i in combo], "eliminations": list(elims.items())})
+                out[n_idx].append({
+                    "type": t,
+                    "cells": [H[i] for i in combo],
+                    "eliminations": list(elims.items()),
+                })
 
-def _hidden_subset_in_house(mask, H, out, n_idx):
-    values = [mask[r, c] for r, c in H]
+
+def _hidden_subset_in_house(mask: np.ndarray, H, out, n_idx):
+    cells = np.array([mask[r, c] for r, c in H])
     for k in range(2, 5):
-        for digits in combinations(range(1, 10), k):
-            digit_mask = 0
-            for d in digits:
-                digit_mask |= 1 << (d - 1)
-            positions = [idx for idx in range(9) if values[idx] & digit_mask]
+        for digits in combinations(range(9), k):
+            digit_mask = cells[:, digits]
+            positions = np.where(digit_mask.any(axis=1))[0]
             if len(positions) != k:
                 continue
-            elims = {}
+            elims: dict[tuple[int, int], list[int]] = {}
             for idx in positions:
-                extra = values[idx] & (ALL_CANDIDATES & ~digit_mask)
+                extra = [d + 1 for d in np.where(cells[idx])[0] if d not in digits]
                 if extra:
                     r, c = H[idx]
-                    for d in digits_from_mask(extra):
-                        elims.setdefault((r, c), []).append(d)
+                    elims[(r, c)] = extra
             if elims:
                 t = {2: "hidden_pair", 3: "hidden_triple", 4: "hidden_quad"}[k]
-                out[n_idx].append({"type": t, "cells": [H[i] for i in positions], "eliminations": list(elims.items())})
+                out[n_idx].append({
+                    "type": t,
+                    "cells": [H[i] for i in positions],
+                    "eliminations": list(elims.items()),
+                })
+
 
 def find_naked_subsets(mask: np.ndarray, out: list[list[dict]]) -> None:
     N = mask.shape[0]
@@ -60,9 +65,11 @@ def find_naked_subsets(mask: np.ndarray, out: list[list[dict]]) -> None:
         for H in HOUSES:
             _naked_subset_in_house(m, H, out, n)
 
+
 def find_hidden_subsets(mask: np.ndarray, out: list[list[dict]]) -> None:
     N = mask.shape[0]
     for n in range(N):
         m = mask[n]
         for H in HOUSES:
             _hidden_subset_in_house(m, H, out, n)
+

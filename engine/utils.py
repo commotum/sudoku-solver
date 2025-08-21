@@ -5,9 +5,6 @@ import random
 
 import numpy as np
 
-
-ALL_CANDIDATES = (1 << 9) - 1  # 0b1_1111_1111
-
 # Precompute houses
 ROWS = [[(r, c) for c in range(9)] for r in range(9)]
 COLS = [[(r, c) for r in range(9)] for c in range(9)]
@@ -30,54 +27,45 @@ for r in range(9):
         peers.remove((r, c))
         PEERS[r][c] = peers
 
-# Popcount lookup for 9-bit masks
-POPCOUNT = np.array([bin(i).count("1") for i in range(1 << 9)], dtype=np.uint8)
 
-
-def popcount16(mask: np.ndarray) -> np.ndarray:
-    """Vectorized population count for uint16 mask arrays."""
-    return POPCOUNT[mask]
-
-
-def digits_from_mask(mask_rc: int) -> list[int]:
-    """Return list of 1-based digits present in mask value."""
-    return [d + 1 for d in range(9) if mask_rc & (1 << d)]
-
-
-def Pos(mask: np.ndarray, H: list[tuple[int, int]], n: int) -> list[tuple[int, int]]:
-    """Positions of digit ``n`` within house ``H`` for a single grid mask."""
-    bit = 1 << (n - 1)
-    return [(r, c) for r, c in H if mask[r, c] & bit]
+def digits_from_cand(cand_rc: np.ndarray) -> list[int]:
+    """Return list of 1-based digits present in a candidate boolean slice."""
+    return [d + 1 for d in range(9) if cand_rc[d]]
 
 
 def candidate_mask_init(grids: np.ndarray) -> np.ndarray:
-    """Compute uint16 candidate masks for a batch of grids."""
+    """Compute boolean candidate masks for a batch of grids."""
     if grids.ndim == 2:
         grids = grids[None, ...]
     N = grids.shape[0]
-    mask = np.full((N, 9, 9), ALL_CANDIDATES, dtype=np.uint16)
+    mask = np.ones((N, 9, 9, 9), dtype=bool)
     for n in range(N):
         grid = grids[n]
         for r in range(9):
             for c in range(9):
                 val = int(grid[r, c])
                 if val:
-                    bit = 1 << (val - 1)
-                    mask[n, r, c] = bit
-                    inv_bit = np.uint16(~bit & ALL_CANDIDATES)
-                    for rr, cc in PEERS[r][c]:
-                        mask[n, rr, cc] &= inv_bit
+                    d = val - 1
+                    mask[n, r, c, :] = False
+                    mask[n, r, c, d] = True
+                    mask[n, r, :, d] = False
+                    mask[n, :, c, d] = False
+                    br, bc = r // 3, c // 3
+                    mask[n, br * 3 : br * 3 + 3, bc * 3 : bc * 3 + 3, d] = False
+                    mask[n, r, c, d] = True
     return mask
 
 
 def assign(grid: np.ndarray, mask: np.ndarray, r: int, c: int, d0idx: int) -> None:
     """Assign digit index ``d0idx`` (0-based) to cell ``(r, c)`` updating peers."""
-    bit = 1 << d0idx
     grid[r, c] = d0idx + 1
-    mask[r, c] = bit
-    inv_bit = np.uint16(~bit & ALL_CANDIDATES)
-    for rr, cc in PEERS[r][c]:
-        mask[rr, cc] &= inv_bit
+    mask[r, c, :] = False
+    mask[r, c, d0idx] = True
+    mask[r, :, d0idx] = False
+    mask[:, c, d0idx] = False
+    br, bc = r // 3, c // 3
+    mask[br * 3 : br * 3 + 3, bc * 3 : bc * 3 + 3, d0idx] = False
+    mask[r, c, d0idx] = True
 
 
 def apply_deductions(
@@ -99,10 +87,9 @@ def apply_deductions(
             if "eliminations" in ded:
                 for (r, c), vals in ded["eliminations"]:
                     for val in vals:
-                        bit = 1 << (val - 1)
-                        inv_bit = np.uint16(~bit & ALL_CANDIDATES)
-                        if mask[n, r, c] & bit:
-                            mask[n, r, c] &= inv_bit
+                        d = val - 1
+                        if mask[n, r, c, d]:
+                            mask[n, r, c, d] = False
                             changes += 1
     return changes
 

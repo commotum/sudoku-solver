@@ -1,37 +1,42 @@
+"""Intersection removal strategies using boolean candidate grids."""
+
 import numpy as np
 
 from engine.utils import ROWS, COLS, BLOCKS
 
 
-def cover(m: np.ndarray, H1, H2, digit: int):
-    bit = 1 << (digit - 1)
-    pos = [rc for rc in H1 if m[rc] & bit]
+def _cover(m: np.ndarray, H1, H2, digit: int):
+    """Return elimination list when digit in ``H1`` is confined to ``H2``."""
+    d = digit - 1
+    pos = [rc for rc in H1 if m[rc][d]]
     if not pos:
         return []
     if all(rc in H2 for rc in pos):
         elims: dict[tuple[int, int], list[int]] = {}
         for r, c in H2:
-            if (r, c) not in H1 and m[r, c] & bit:
+            if (r, c) not in H1 and m[r, c, d]:
                 elims.setdefault((r, c), []).append(digit)
         return list(elims.items())
     return []
+
 
 def find_locked_candidates_pointing(mask: np.ndarray, out: list[list[dict]]) -> None:
     N = mask.shape[0]
     for n in range(N):
         m = mask[n]
-        for bidx, B in enumerate(BLOCKS):
+        for B in BLOCKS:
             rows = {r for r, _ in B}
             cols = {c for _, c in B}
             for digit in range(1, 10):
                 for r in rows:
-                    elims = cover(m, B, ROWS[r], digit)
+                    elims = _cover(m, B, ROWS[r], digit)
                     if elims:
                         out[n].append({"type": "locked_pointing", "eliminations": elims})
                 for c in cols:
-                    elims = cover(m, B, COLS[c], digit)
+                    elims = _cover(m, B, COLS[c], digit)
                     if elims:
                         out[n].append({"type": "locked_pointing", "eliminations": elims})
+
 
 def find_locked_candidates_claiming(mask: np.ndarray, out: list[list[dict]]) -> None:
     N = mask.shape[0]
@@ -42,7 +47,7 @@ def find_locked_candidates_claiming(mask: np.ndarray, out: list[list[dict]]) -> 
             for bidx in blocks:
                 B = BLOCKS[bidx]
                 for digit in range(1, 10):
-                    elims = cover(m, ROWS[r], B, digit)
+                    elims = _cover(m, ROWS[r], B, digit)
                     if elims:
                         out[n].append({"type": "locked_claiming", "eliminations": elims})
         for c in range(9):
@@ -50,6 +55,7 @@ def find_locked_candidates_claiming(mask: np.ndarray, out: list[list[dict]]) -> 
             for bidx in blocks:
                 B = BLOCKS[bidx]
                 for digit in range(1, 10):
-                    elims = cover(m, COLS[c], B, digit)
+                    elims = _cover(m, COLS[c], B, digit)
                     if elims:
                         out[n].append({"type": "locked_claiming", "eliminations": elims})
+
