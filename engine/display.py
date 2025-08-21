@@ -63,22 +63,30 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
     for idx, step_info in enumerate(sequence):
         deductions = step_info["deductions"]
         prev_grid = grid.copy()
-        applied = apply_deductions(grid[np.newaxis], mask, [deductions])
-        total_placements += applied
+        apply_deductions(grid[np.newaxis], mask, [deductions])
+
+        # Determine which cells actually changed this step
+        diff = (prev_grid == 0) & (grid != prev_grid)
+        changed_positions = np.argwhere(diff)
+        delta = len(changed_positions)
+        total_placements += delta
 
         pretty_print_grid(grid, prev_grid)
         print()
 
-        print(f"T-{step_info['step'] + 1}:  Δ +{applied}")
+        print(f"T-{step_info['step'] + 1}:  Δ +{delta}")
 
+        # Only report deductions that resulted in new placements
+        changed_set = {tuple(pos) for pos in changed_positions}
         unique_deds = {}
         for ded in deductions:
             if "value" in ded:
                 pos = tuple(map(int, ded["position"]))
-                val = int(ded["value"])
-                key = (pos, val)
-                if key not in unique_deds:
-                    unique_deds[key] = ded["type"]
+                if pos in changed_set:
+                    val = int(ded["value"])
+                    key = (pos, val)
+                    if key not in unique_deds:
+                        unique_deds[key] = ded["type"]
 
         for key, typ in unique_deds.items():
             pos, val = key
