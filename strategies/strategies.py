@@ -1,4 +1,5 @@
 import numpy as np
+
 from .singles import (
     find_naked_singles,
     find_hidden_singles_rows,
@@ -15,77 +16,65 @@ from .fish import (
     find_x_wing_cols,
     find_swordfish_rows,
     find_swordfish_cols,
+    find_jellyfish_rows,
+    find_jellyfish_cols,
 )
 from .uniqueness import find_ur_type1
-from engine.utils import compute_candidates
-# Dictionary mapping strategy names to functions
+
 STRATEGY_FUNCTIONS = {
-    'naked_single': find_naked_singles,
-    'hidden_single_row': find_hidden_singles_rows,
-    'hidden_single_col': find_hidden_singles_cols,
-    'hidden_single_box': find_hidden_singles_boxes,
-    'naked_subsets': find_naked_subsets,
-    'hidden_subsets': find_hidden_subsets,
-    'locked_pointing': find_locked_candidates_pointing,
-    'locked_claiming': find_locked_candidates_claiming,
-    'x_wing_row': find_x_wing_rows,
-    'x_wing_col': find_x_wing_cols,
-    'swordfish_row': find_swordfish_rows,
-    'swordfish_col': find_swordfish_cols,
-    'ur_type1': find_ur_type1,
+    "naked_single": find_naked_singles,
+    "hidden_single_row": find_hidden_singles_rows,
+    "hidden_single_col": find_hidden_singles_cols,
+    "hidden_single_box": find_hidden_singles_boxes,
+    "naked_subsets": find_naked_subsets,
+    "hidden_subsets": find_hidden_subsets,
+    "locked_pointing": find_locked_candidates_pointing,
+    "locked_claiming": find_locked_candidates_claiming,
+    "x_wing_row": find_x_wing_rows,
+    "x_wing_col": find_x_wing_cols,
+    "swordfish_row": find_swordfish_rows,
+    "swordfish_col": find_swordfish_cols,
+    "jellyfish_row": find_jellyfish_rows,
+    "jellyfish_col": find_jellyfish_cols,
+    "ur_type1": find_ur_type1,
 }
 
-# Strategy tiers from easiest to hardest. Each tier is a pre-expanded list of
-# explicit strategy names in deterministic execution order.
 TIERS = {
     1: [
-        'naked_single',
-        'hidden_single_row',
-        'hidden_single_col',
-        'hidden_single_box',
+        "naked_single",
+        "hidden_single_row",
+        "hidden_single_col",
+        "hidden_single_box",
     ],
     2: [
-        'naked_subsets',
-        'hidden_subsets',
-        'locked_pointing',
-        'locked_claiming',
+        "naked_subsets",
+        "hidden_subsets",
+        "locked_pointing",
+        "locked_claiming",
     ],
     3: [
-        'x_wing_row',
-        'x_wing_col',
-        'swordfish_row',
-        'swordfish_col',
-        'ur_type1',
+        "x_wing_row",
+        "x_wing_col",
+        "swordfish_row",
+        "swordfish_col",
+        "jellyfish_row",
+        "jellyfish_col",
+        "ur_type1",
     ],
-    # Placeholders for future strategy categories
-    4: [],  # wings
-    5: [],  # chains
+    4: [],
+    5: [],
 }
 
-def find_deductions_batch(
-    grids: np.ndarray | None = None,
-    strategies: list[str] = [
-        'naked_single',
-        'hidden_single_row',
-        'hidden_single_col',
-        'hidden_single_box',
-    ],
-    candidates: np.ndarray | None = None,
-) -> list[list[dict]]:
-    """Find deductions for a batch of Sudoku grids or candidate masks."""
-    if candidates is None:
-        if grids is None:
-            raise ValueError("Either grids or candidates must be provided")
-        candidates = compute_candidates(grids)
-
-    N = candidates.shape[0]
-
+def find_deductions_batch(mask: np.ndarray, strategies: list[str]) -> list[list[dict]]:
+    """Run selected strategies on mask batch."""
+    if mask.ndim == 2:
+        mask = mask[None, ...]
+    N = mask.shape[0]
     all_deductions = [[] for _ in range(N)]
-
-    for strat in strategies:
-        if strat in STRATEGY_FUNCTIONS:
-            STRATEGY_FUNCTIONS[strat](candidates, all_deductions)
+    for name in strategies:
+        func = STRATEGY_FUNCTIONS.get(name)
+        if func:
+            func(mask, all_deductions)
         else:
-            print(f"Warning: Strategy '{strat}' not implemented.")
-
+            print(f"Warning: Strategy '{name}' not implemented.")
     return all_deductions

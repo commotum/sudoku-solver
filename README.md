@@ -110,6 +110,10 @@ print(len(sequences), "puzzles solved")
 * **`strategies/strategies.py`**: Central hub that imports strategy functions and maps names → functions in `STRATEGY_FUNCTIONS`. Also expands grouped names like `hidden_single` into row/col/box variants.
 * **`utils.py`**: Validation (`is_solved`, `is_valid`), application of deductions (`apply_deductions`), and a grid pretty‑printer.
 
+### Set-notation core
+
+Let $N=\{1,\dots,9\}$ be digits, $R=C=\{1,\dots,9\}$ rows and columns, and $X=R\times C$ the set of cells. $B$ denotes the nine blocks. A *house* $H$ is any row, column, or block. For a cell $x=(r,c)$, $\text{Peers}(x)=\text{row}(x)\cup\text{col}(x)\cup\text{blk}(x)\setminus\{x\}$. For a house $H$ and digit $n$, $\text{Pos}(H,n)=\{x\in H\mid n\text{ is a candidate in }x\}$.
+
 ### Default Strategies
 
 In `solver.solve_batch`, the default list is:
@@ -158,6 +162,7 @@ Strategies are organized by action type, complexity, and scope. The solver shoul
 
   * `x_wing_row`, `x_wing_col`
   * `swordfish_row`, `swordfish_col`
+  * `jellyfish_row`, `jellyfish_col`
 * **Uniqueness** (`strategies/uniqueness.py`):
 
   * `ur_type1`
@@ -175,7 +180,7 @@ Each puzzle’s solution is a sequence of step records:
 * `deductions` contains items like:
 
   * Singles: `{ "type": "naked_single", "position": (r, c), "value": v }`
-  * Eliminations: `{ "type": "locked_pointing_row", "eliminations": [ ((r, c), [values...]), ... ] }`
+  * Eliminations: `{ "type": "locked_pointing", "eliminations": [ ((r, c), [values...]), ... ] }`
   * Uniqueness: { "type": "ur_type1", "position": (r, c), "value": v }
 
 You can save these sequences for ML or analysis.
@@ -332,4 +337,4 @@ This project may refer to or integrate the following third‑party materials. Ea
 
 * **Dataset**: Sapient AI’s *Hardest Sudoku Puzzle Dataset V2* on Hugging Face (`sapientinc/sudoku-extreme`).
 
-* **Upstream sources referenced by the dataset**: `tdoku` benchmarks and the `enjoysudoku` community.
+<!-- Refactor summary: utils.py, solver.py and strategy modules now use uint16 masks; legacy (N,9,9,9) boolean paths removed. -->
