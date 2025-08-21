@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils import ROWS, COLS, BLOCKS
+from engine.utils import ROWS, COLS, BLOCKS
 
 
 def cover(m: np.ndarray, H1, H2, digit: int):

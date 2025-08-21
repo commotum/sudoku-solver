@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils import popcount16, digits_from_mask, ROWS, COLS, BLOCKS, Pos
+from engine.utils import popcount16, digits_from_mask, ROWS, COLS, BLOCKS, Pos
 
 
 def find_naked_singles(mask: np.ndarray, out: list[list[dict]]) -> None:

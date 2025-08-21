@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from .utils import compute_candidates, apply_deductions
+from .utils import candidate_mask_init, apply_deductions
 
 
 def pretty_print_grid(grid: np.ndarray, prev_grid: np.ndarray = None) -> None:
@@ -58,12 +58,12 @@ def display_sequence(initial_grid: np.ndarray, sequence: list[dict]):
     """Replay a solution sequence with pretty printing and summary statistics."""
 
     grid = initial_grid.copy()
-    candidates = compute_candidates(grid[np.newaxis])
+    mask = candidate_mask_init(grid[np.newaxis])
     total_placements = 0
     for idx, step_info in enumerate(sequence):
         deductions = step_info["deductions"]
         prev_grid = grid.copy()
-        applied = apply_deductions(grid[np.newaxis], candidates, [deductions])
+        applied = apply_deductions(grid[np.newaxis], mask, [deductions])
         total_placements += applied
 
         pretty_print_grid(grid, prev_grid)
