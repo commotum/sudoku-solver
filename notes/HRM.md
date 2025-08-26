@@ -202,3 +202,56 @@ In addition there are each of the following pieces that can be "played" or "writ
 [10]: https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf?utm_source=chatgpt.com "ImageNet: A Large-Scale Hierarchical Image Database"
 [11]: https://people.csail.mit.edu/torralba/publications/datasets_cvpr11.pdf?utm_source=chatgpt.com "Unbiased Look at Dataset Bias - People | MIT CSAIL"
 [12]: https://research.google.com/pubs/archive/42503.pdf?utm_source=chatgpt.com "Intriguing properties of neural networks"
+
+
+
+Love it. If you want one main term, go with **compute-conductive** as the adjective. Then keep the noun forms around for metrics.
+
+# Naming + style (use this in your README)
+
+* **compute-conductive** *(adj.)* — an architecture/model that readily turns platform upgrades (GPUs, kernels, compilers, runtimes) into real speed/throughput **without changing the math**.
+
+  > “Our AR solver is **compute-conductive**; CUDA 12 + FlashAttention gave a 1.5× speedup with no model changes.”
+
+* **compute conductance (Gᶜ)** *(noun, metric)* — measured fraction of a platform win your model actually captures.
+
+  $$
+  \textbf{Tailwind Gain (TG)}=\frac{\text{throughput}_{\text{new}}}{\text{throughput}_{\text{old}}},\quad
+  \mathbf{G^{c}}=\frac{\mathrm{TG}_{\text{model}}}{\mathrm{TG}_{\text{microbench}}}
+  $$
+
+* **compute conductivity (κᶜ)** *(noun, optional)* — architecture-level tendency to be compute-conductive across platforms (geometric mean of $G^{c}$ across upgrades).
+
+### Tiny style guide
+
+* Hyphenate when used before a noun: “**compute-conductive** design.”
+* No hyphen in predicate is okay: “this model is compute conductive.”
+* Avoid the adverb (“compute-conductively”)—it reads clunky.
+
+# Drop-in blurb (definition + metrics)
+
+> **Compute-conductive** models ride platform tailwinds with almost no code changes. We report **Tailwind Gain (TG)** and **compute conductance (Gᶜ)** for each release. Transformers typically show higher **κᶜ** than step-wise RNNs because attention parallelizes token work and maps to heavily optimized kernels.
+
+# Example table you can reuse
+
+| Build                     | TG (↑) | Microbench TG | **Gᶜ** (↑) |
+| ------------------------- | -----: | ------------: | ---------: |
+| AR Transformer (portable) |  1.52× |         1.86× |   **0.82** |
+| LSTM (chunked)            |  1.18× |         1.86× |       0.63 |
+
+# When to use the variants
+
+* Use **compute-conductive** in prose (“is/are compute-conductive”).
+* Use **Gᶜ** in perf sections/figures.
+* Use **κᶜ** only in comparative architecture talks/papers.
+
+If you want, I can weave these into a short “Performance & Tailwinds” section for your repo with a tiny benchmark script that prints TG and $G^{c}$.
+
+
+
+1. Compute-Conductive
+2. Expert-Independent
+
+3. Knowledge-Conductive
+4. Substrate-Elastic
+5. Resilient-Adaptive
