@@ -154,3 +154,51 @@ Universal interface: Text is the lowest-friction API for expertise. Anyone can c
 Open-ended goals: Language tasks aren’t bounded like chess/go boards; they span many domains with shared tokens and shared temporal structure. That yields re-use and adoption.
 
 Your MonSTERs idea (4D spacetime encoding) is a concrete way to extend that temporal substrate to spatial sets and procedures—exactly the right direction.
+
+
+
+
+what other words could we use besides point? or how could we make it more clear? point and pointers are super overloaded I feel like?
+
+point is about unambiguous reference
+a pointer (a precise part of a state: one cell, a 3×3 box, a text span, a code block)
+point(...) = mark a specific referent
+
+Like ideally, in the case of Sudoku, there's each of the following sub spaces:
+
+1. The Puzzle Grid (The Landscape)
+2. The Candidate Tensor (The Remaining Options)
+3. The Logic or Scratch Pad (Working Memory)
+4. The Delta Log (List of Changes)
+5. The Relay (Messaging Space or Console)
+
+In addition there are each of the following pieces that can be "played" or "written" by the model to those spaces:
+
+1. Values/Numbers {0-9} with 0 for empty.
+2. Booleans {T, F} 
+3. Landmarks {Rows, Columns, Boxes, Cells}
+4. Symbols {∃, ≠, ?, <, ∵, ∀, ⇒, ¬, etc.}
+5. Markers {Colors}
+
+
+
+
+| Domain (Sutton)        | Breakthrough                                      | Compute-leveraged pieces                                                                  | Human-leveraged pieces (heuristics, supervision, evaluation)                                                                                                                                                                                                                                              | Brittleness / reuse today                                                                                                                                                             |
+| ---------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Chess**              | IBM **Deep Blue** beats Kasparov (1997)           | Massive parallel alpha-beta search; specialized VLSI; hundreds of millions of nodes/sec   | Large **opening books** curated by GMs; **hand-engineered evaluation** with thousands of terms; **endgame tablebases**; parameters fine-tuned by experts. ([Wikipedia][1])                                                                                                                                | **Non-portable.** IBM dismantled Deep Blue; the two racks sit in museums (Smithsonian & Computer History Museum). It wasn’t repurposed for other tasks. ([Wikipedia][1])              |
+| **Go**                 | **AlphaGo** → **AlphaGo Zero** (2016–2017)        | Huge self-play + MCTS search; large-scale training on TPUs/GPUs                           | First AlphaGo **pre-trained on human expert games** before RL; **rules, MCTS design, evaluation protocols** are human choices. (AlphaGo Zero removed human game data but still bakes in human-designed architecture & search.) ([ResearchGate][2], [Nature][3])                                           | **Narrow & retired.** AlphaGo was **retired from competition**; research moved on to AlphaZero. Great at board games, not a general scientist. ([Google DeepMind][4], [Science][5])   |
+| **Speech recognition** | HMM era → **deep neural acoustic models** (2010s) | Scalable training on large speech corpora; deep LSTM/DNN models vastly reduce WER vs GMMs | Classic systems relied on **pronunciation lexicons** & **language models**; even modern systems depend on **human-labeled transcripts**, dictionaries, and human-chosen **WER** evaluation—plus well-documented **biases** across dialects. ([Google Research][6], [publications.idiap.ch][7], [PNAS][8]) | **Data brittleness.** Accuracy varies by accent/race and noise; models can underperform outside training distributions—expensive to fix without more targeted human data. ([PNAS][8]) |
+| **Computer vision**    | **CNNs on ImageNet** (AlexNet, 2012)              | GPU training at scale; deep conv nets that keep improving with more compute/data          | **Massive human labeling (ImageNet)**; **architecture choices** (convolution, pooling) encode human inductive bias; evaluation via **Top-1/Top-5** designed by humans; known **dataset bias** issues. ([NeurIPS Proceedings][9], [image-net.org][10], [MIT CSAIL][11])                                    | **Generalization brittleness.** Cross-dataset performance drops; vulnerable to **adversarial examples**—strong but fragile. ([MIT CSAIL][11], [Google Research][12])                  |
+
+[1]: https://en.wikipedia.org/wiki/Deep_Blue_%28chess_computer%29 "Deep Blue (chess computer) - Wikipedia"
+[2]: https://www.researchgate.net/publication/292074166_Mastering_the_game_of_Go_with_deep_neural_networks_and_tree_search?utm_source=chatgpt.com "(PDF) Mastering the game of Go with deep neural networks ..."
+[3]: https://www.nature.com/articles/nature24270?utm_source=chatgpt.com "Mastering the game of Go without human knowledge"
+[4]: https://deepmind.google/discover/blog/alphagos-next-move/?utm_source=chatgpt.com "AlphaGo's next move"
+[5]: https://www.science.org/doi/10.1126/science.aar6404?utm_source=chatgpt.com "A general reinforcement learning algorithm that masters ..."
+[6]: https://research.google/pubs/deep-neural-networks-for-acoustic-modeling-in-speech-recognition/?utm_source=chatgpt.com "Deep Neural Networks for Acoustic Modeling in Speech ..."
+[7]: https://publications.idiap.ch/downloads/papers/2012/Rasipuram_INTERSPEECH_2012.pdf?utm_source=chatgpt.com "Combining Acoustic Data Driven G2P and Letter-to-Sound ..."
+[8]: https://www.pnas.org/doi/10.1073/pnas.1915768117?utm_source=chatgpt.com "Racial disparities in automated speech recognition"
+[9]: https://proceedings.neurips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf?utm_source=chatgpt.com "ImageNet Classification with Deep Convolutional Neural ..."
+[10]: https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf?utm_source=chatgpt.com "ImageNet: A Large-Scale Hierarchical Image Database"
+[11]: https://people.csail.mit.edu/torralba/publications/datasets_cvpr11.pdf?utm_source=chatgpt.com "Unbiased Look at Dataset Bias - People | MIT CSAIL"
+[12]: https://research.google.com/pubs/archive/42503.pdf?utm_source=chatgpt.com "Intriguing properties of neural networks"
