@@ -1,27 +1,128 @@
+1. Parse input
+2. For given in givens:
+    - assert value
+    - elementary constraint propagation
+    - 
+
+engine
+
+
+
 # Nine by Nine
 
 Nine-by-Nine is a NumPy-accelerated Sudoku engine built to generate explainable, human-like reasoning traces and full step-by-step resolution paths for spatiotemporal reasoning datasets. 
 
+The Nine-by-Nine engine models each Sudoku puzzle as a Constraint Satisfaction Problem with and uses two arrays to jointly capture a complete and consistent portrait of the puzzle for every intermediate step in the resolution process.
+
+The first is a **solution grid** `G ∈ uint8^{9×9}` where `0` denotes an empty square and `1..9` are placed numbers, and the second is a **candidate tensor** `C ∈ bool^{9×9×9}`
 
 
 
-The solution grid G ∈ uint8^{9×9} holds the 
 
-To track each intermediate step in the resolution process, the Nine-by-Nine engine uses two arrays to jointly capture a complete and consistent portrait of the puzzle at that timestep. 
+Given a 9x9 grid, partially filled with numbers from 1 to 9 (the "entries" of the
+problem, also called the "clues" or the "givens"), complete it with numbers from 1 to
+9 so that in every of the nine rows, in every of the nine columns and in every of the
+nine disjoint blocks of 3x3 contiguous cells, the following property holds:
+– there is at most one occurrence of each of these numbers.
 
-To track each intermediate step in the resolution process, the Nine-by-Nine engine maintains two companion arrays that jointly describe the 
+Since rows, columns and blocks play similar roles in the defining constraints,
+they will naturally appear to do so in many other places and it is convenient to intro-
+duce a word that makes no difference between them: a unit is either a row or a
+column or a block. And we say that two cells share a unit if they are either in the
+same row or in the same column or in the same block (where "or" is non exclusive).
+We also say that these two cells are linked, or that they see each other. It should be
+noticed that this (symmetric) relation between two cells, whichever of the three
+equivalent names it is given, does not depend in any way on the content of these
+cells but only on their place in the grid; it is therefore a straightforward and quasi
+physical notion.
 
-joint arrays It's solver maintains two companion arrays that jointly describe the  
+The problem statement lists the constraints a solution grid must satisfy, i.e. it
+says what we want. It does not say anything about how we can obtain it: this is the
+job of the resolution methods and the resolution rules on which they are based.
 
-The engine maintains two companion arrays that jointly describe the puzzle at each step. The solution grid G ∈ uint8^{9×9} holds committed numbers (0 = empty, 1..9 = placed). The candidate tensor C ∈ bool^{9×9×9} is a possibilities cube: C[r,c,n] is True exactly when number n+1 remains admissible at cell (r,c), so the slice C[r,c,:] lists all remaining options for that cell. Rules read simple slices of C across rc/rn/cn/bn to detect Singles (counting Trues), and when a number is fixed we set G[r,c]=n+1 and perform slice-based eliminations in C (row/column/block) so the two arrays stay mutually consistent as the solve progresses.
+at any stage of the resolution process, candidates
+for a cell are the numbers that are not yet explicitly known to be impossible values
+for this cell.
 
-The engine maintains two synchronized views of the same puzzle state
+the resolution process is a sequence of steps consisting of repeatedly
+applying "resolution rules" (some of which have become very classical and some of
+which may be very complex) of the general condition-action type: if some pattern
+(i.e. configuration) of cells, links, values and candidates for these cells is present on
+the grid, then carry out the action specified by the rule.
 
-The engine maintains two arrays: a **solution grid** `G ∈ uint8^{9×9}` where `0` denotes empty and `1..9` are placed numbers, and a **candidate tensor** `C ∈ bool^{9×9×9}`. Entry `C[r,c,n]` encodes the predicate **“number `n+1` is currently admissible at cell `(r,c)` under Sudoku rules”** (with `r,c,n ∈ {0..8}`); equivalently, the 9-long slice `C[r,c,:]` enumerates **all remaining candidates** for that cell.
+According to the type of their action part, such rules can be classified into three
+categories:
+– either assert the final value of a cell (when it is proven there is only one possi-
+bility left for it); there are very few rules of this type;
+– or delete some candidate(s) (which we call the target values of the pattern)
+from some cell(s) (which we call the target cells of the pattern); as appears from a
+quick browsing of the available literature and as will be confirmed by this book,
+most resolution rules are of this type; they express specific forms of constraints
+propagation; their general form is: if such a pattern is present, then it is impossible
+for some value(s) to be in some cell(s) and the corresponding candidates must be
+deleted from them;
+– or, for some very difficult grids, recursively make a hypothesis on the value of
+a cell, analyse its consequences and apply the eliminations induced by the
+contradictions thus discovered;
+
+The four simpler constraints propagation rules (obviously valid) are the direct
+translation of the initial problem formulation into operational rules for managing
+candidates. We call them "the (four) elementary constraints propagation rules"
+(ECP):
+– ECP(cell): "if a value is asserted for a cell (as is the case for the initial values),
+then remove all the other candidates for this cell";
+– ECP(row): "if a value is asserted for a cell (as is the case for the initial values),
+then remove this value from the candidates for any other cell in the same row";
+– ECP(col): "if a value is asserted for a cell (as is the case for the initial values),
+then remove this value from the candidates for any other cell in the same column";
+– ECP(blk): "if a value is asserted for a cell (as is the case for the initial values),
+then remove this value from the candidates for any other cell in the same block".
+The simpler assertion rule (also obviously valid) is called Naked-Single:
+– NS: "if a cell has only one candidate left, then assert it as the only possible
+value of the cell".
+Together with NS, the four elementary constraints propagation rules constitute
+"the (five) elementary rules".
+
+ok, we build a hierarchy of rules progressi-
+vely, based on:
+– a distinction between three general classes of rules: subset rules, interaction
+rules and chain rules;
+– a generalised notion of logical symmetry and associated representations;
+– a second guiding principle: a rule obtained from another by some (generalised
+or not) logical symmetry must be granted the same logical complexity.
+
+Moreover, to every resolution method one can associate a simple systematic
+procedure for solving a puzzle:
+List the all the resolution rules in a way compatible with their precedence ordering
+(i.e. among the different possibilities of doing so choose one)
+Loop until a solution is found (or until it is proven there can be no solution)
+⎢
+Do until a rule applies effectively
+⎢
+⎢
+Take the first rule not yet tried in the list
+⎢
+⎢
+Do until its conditions pattern effectively maps to the grid
+⎢
+⎢
+⎢
+Try all possible mappings of the conditions pattern
+
+Introduction
+25
+⎢
+⎢
+End do
+⎢
+End do
+⎢
+Apply rule on selected matching pattern
+End loop
 
 
-Design:
-It uses a 
+
+
 
 
 # Level 0: The Five Elementary Rules

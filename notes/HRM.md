@@ -255,3 +255,6 @@ If you want, I can weave these into a short “Performance & Tailwinds” sectio
 3. Knowledge-Conductive
 4. Substrate-Elastic
 5. Resilient-Adaptive
+stable plastic
+
+Time Spent Idle
