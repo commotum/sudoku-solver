@@ -109,3 +109,40 @@ def assert_value(C, r, c, n):        # n = 0..8 for digit 1..9
 
 """
 
+Change = {
+  "action": "assert" | "eliminate" | "assume",
+  "cell": (r, c),        # 0-based indices
+  "value": int,          # 1..9
+  "why": str | None      # optional note per change
+}
+
+# The Four Elementary Constraint Propagation Rules
+def ECP(C, r, c, n):
+
+    # 1. **ECP Cell**: Eliminate all other candidates from that cell.
+    C[r, c, :] = False
+
+    # 2. **ECP Row**: Eliminate the asserted value as a candidate from each of the row's remaining cells.
+    C[r, :, n] = False
+
+    # 3. **ECP Column**: Eliminate the asserted value as a candidate from each of the column's remaining cells.
+    C[:, c, n] = False
+    
+    # 4. **ECP Block**: Eliminate the asserted value as a candidate from each of the block's remaining cells.
+    C[br*3:(br+1)*3, bc*3:(bc+1)*3, n] = False
+
+
+
+"""
+Step 17 — Hidden Single
+R1C5 = 8
+∴ Row:  R1C1,R1C2,... ≠ 8
+∴ Col:  R2C5,R3C5,... ≠ 8
+∴ Block: R1C4,R2C4,... ≠ 8
+∴ Cell:  R1C5 ≠ {1,2,3,4,6,7,9}
+
+"""
+
+"""
+For Sudoku candidates, use a consistent 0-based flattening of the 3-D boolean tensor `C[r,c,d_idx]` (rows, cols, digit index 0..8) into a single index `idx = r*81 + c*9 + d_idx`. This gives you a stable ID in `[0,728]` for every candidate slot `(r,c,d)` (where `digit = d_idx + 1`), perfect for sparse deltas, multi-hot targets, and pointer heads. Decode with integer ops—`r = idx // 81`, `c = (idx % 81) // 9`, `d_idx = idx % 9`—or via `np.unravel_index(idx, (9,9,9))` (C-order). Keep a separate 2-D **cell index** `cell = r*9 + c` in `[0,80]` for value assignments; pair it with `digit` when needed. The only hard rule is **consistency**: pick one order (here `(r,c,d)`), use it everywhere (storage, logging, training), and document it next to your schema so deltas, masks, and witnesses stay aligned.
+"""
